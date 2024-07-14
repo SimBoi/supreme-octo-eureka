@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 enum AccountType {
   none,
   customer,
-  barber
+  teacher,
 }
 
 class Customer {
@@ -14,7 +14,7 @@ class Customer {
   String password;
   String oneSignalID;
   bool isVerified;
-  String currentAppointment;
+  List<String> currentAppointments;
 
   Customer({
     required this.id,
@@ -23,79 +23,37 @@ class Customer {
     required this.password,
     required this.oneSignalID,
     required this.isVerified,
-    required this.currentAppointment,
+    required this.currentAppointments,
   });
 }
 
-class Barber {
+class Teacher {
   int id;
   String username;
   String profileImage;
   String phone;
   String password;
-  String instagram;
-  String about;
-  String services;
-  double latitude;
-  double longitude;
   String oneSignalID;
-  List<String> blockedCustomers;
-  int maxBookingDaysAhead;
-  int timeBetweenAppointments;
-  String sunday;
-  String monday;
-  String tuesday;
-  String wednesday;
-  String thursday;
-  String friday;
-  String saturday;
+  List<String> currentAppointments;
 
-  Barber({
+  Teacher({
     required this.id,
     required this.username,
     required this.profileImage,
     required this.phone,
     required this.password,
-    required this.instagram,
-    required this.about,
-    required this.services,
-    required this.latitude,
-    required this.longitude,
     required this.oneSignalID,
-    required this.blockedCustomers,
-    required this.maxBookingDaysAhead,
-    required this.timeBetweenAppointments,
-    required this.sunday,
-    required this.monday,
-    required this.tuesday,
-    required this.wednesday,
-    required this.thursday,
-    required this.friday,
-    required this.saturday,
+    required this.currentAppointments,
   });
 
-  static Barber empty = Barber(
+  static Teacher empty = Teacher(
     id: 0,
     username: '',
     profileImage: '',
     phone: '',
     password: '',
-    instagram: '',
-    about: '',
-    services: '',
-    latitude: 0,
-    longitude: 0,
     oneSignalID: '',
-    blockedCustomers: [],
-    maxBookingDaysAhead: 0,
-    timeBetweenAppointments: 0,
-    sunday: '',
-    monday: '',
-    tuesday: '',
-    wednesday: '',
-    thursday: '',
-    friday: '',
-    saturday: '',
+    currentAppointments: [],
   );
 }
 
@@ -107,7 +65,7 @@ class AppState extends ChangeNotifier {
   late ThemeData themeData;
   AccountType accountType = AccountType.none;
   Customer? currentCustomer;
-  Barber? currentBarber;
+  Teacher? currentTeacher;
   String language = 'en';
   bool isLoading = false;
 
@@ -205,16 +163,16 @@ class AppState extends ChangeNotifier {
   }
 
   String getPhoneLocalFormat() {
-    String phone = accountType == AccountType.customer ? currentCustomer!.phone : currentBarber!.phone;
+    String phone = accountType == AccountType.customer ? currentCustomer!.phone : currentTeacher!.phone;
     return phone.length == 10 ? phone : '0${phone.substring(3)}';
   }
 
   String getPhoneInternationalFormat() {
-    String phone = accountType == AccountType.customer ? currentCustomer!.phone : currentBarber!.phone;
+    String phone = accountType == AccountType.customer ? currentCustomer!.phone : currentTeacher!.phone;
     return phone.length == 10 ? '972${phone.substring(1)}' : phone;
   }
 
   String getPassword() {
-    return accountType == AccountType.customer ? currentCustomer!.password : currentBarber!.password;
+    return accountType == AccountType.customer ? currentCustomer!.password : currentTeacher!.password;
   }
 }

@@ -64,7 +64,7 @@ Future<bool> login(String phone, String password, AppState appState) async {
           password: password,
           oneSignalID: '123', // TODO: get the real OneSignal ID
           isVerified: jsonResponse['IsVerified'] == '1',
-          currentAppointment: jsonResponse['CurrentAppointment'],
+          currentAppointments: jsonResponse['CurrentAppointments'], // TODO: parse the appointments list
         );
         return true;
       } else if (jsonResponse['Result'] == 'BARBER') {
@@ -152,7 +152,7 @@ Future<bool> signup(String phone, String password, String username, AppState app
           password: password,
           oneSignalID: '',
           isVerified: false,
-          currentAppointment: '',
+          currentAppointments: List.empty(),
         );
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_EXISTS') {

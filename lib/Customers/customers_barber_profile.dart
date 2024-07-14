@@ -12,7 +12,7 @@ class BarberProfilePage extends StatelessWidget {
     required this.id,
   });
 
-  Future<Barber> fetchBarberProfile(int barberId, AppState appState) async {
+  Future<Teacher> fetchBarberProfile(int barberId, AppState appState) async {
     var response = await appState.dbRequest(
       body: {
         'Action': 'LoadBarberProfile',
@@ -27,62 +27,48 @@ class BarberProfilePage extends StatelessWidget {
         // json response is of the following format: {SUCCESS,ProfileImage,Phone,Username,Instagram,TimeBetweenAppointments,About,Services,Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Latitude,Longitude}
         var jsonResponse = json.decode(response.body);
         if (jsonResponse['Result'] == 'SUCCESS') {
-          return Barber(
+          return Teacher(
             id: barberId,
             username: jsonResponse['Username'],
             profileImage: jsonResponse['ProfileImage'],
             phone: jsonResponse['Phone'],
             password: '',
-            instagram: jsonResponse['Instagram'],
-            about: jsonResponse['About'],
-            services: jsonResponse['Services'],
-            latitude: 0, // TODO: add latitude
-            longitude: 0, // TODO: add longitude
             oneSignalID: '',
-            blockedCustomers: [],
-            maxBookingDaysAhead: 0,
-            timeBetweenAppointments: int.parse(jsonResponse['TimeBetweenAppointments']),
-            sunday: jsonResponse['Sunday'],
-            monday: jsonResponse['Monday'],
-            tuesday: jsonResponse['Tuesday'],
-            wednesday: jsonResponse['Wednesday'],
-            thursday: jsonResponse['Thursday'],
-            friday: jsonResponse['Friday'],
-            saturday: jsonResponse['Saturday'],
+            currentAppointments: [],
           );
         } else if (jsonResponse['Result'] == 'ERROR') {
           appState.showErrorSnackBar('Error loading barber profile!');
-          return Barber.empty;
+          return Teacher.empty;
         }
         throw 'error';
       } on FormatException {
         appState.showErrorSnackBar('Json Format Error');
-        return Barber.empty;
+        return Teacher.empty;
       } catch (e) {
         appState.showErrorSnackBar('Unexpected Error');
-        return Barber.empty;
+        return Teacher.empty;
       }
     }
-    return Barber.empty;
+    return Teacher.empty;
   }
 
   @override
   Widget build(BuildContext context) {
     var appState = context.read<AppState>();
     // create a futurebuilder that calls fetchBarberProfile and displays the barber's profile when its ready, otherwise show a loading indicator
-    return FutureBuilder<Barber?>(
+    return FutureBuilder<Teacher?>(
       future: fetchBarberProfile(id, appState),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {
-            if (snapshot.data == Barber.empty) {
+            if (snapshot.data == Teacher.empty) {
               return const Scaffold(
                 body: Center(
                   child: Text('Error loading barber profile!'),
                 ),
               );
             }
-            Barber barber = snapshot.data!;
+            Teacher teacher = snapshot.data!;
             return Scaffold(
               appBar: AppBar(
                 title: const Text('Barber Profile'),

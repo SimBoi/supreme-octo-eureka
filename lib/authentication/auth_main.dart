@@ -29,7 +29,7 @@ class _AuthMainState extends State<AuthMain> {
           isLoading = false;
         });
       }
-      if ((appState.accountType == AccountType.customer && appState.currentCustomer!.isVerified) || (appState.accountType == AccountType.barber)) {
+      if ((appState.accountType == AccountType.customer && appState.currentCustomer!.isVerified) || (appState.accountType == AccountType.teacher)) {
         Navigator.of(context).popUntil((route) => false);
         Navigator.of(context).pushNamed('/${appState.accountType.name}/root');
       } else {
