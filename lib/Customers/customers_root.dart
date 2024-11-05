@@ -36,15 +36,18 @@ class CustomersRoot extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => EditProfilePage()),
                   );
                 },
-                child: ListTile(
-                  leading: const Icon(Icons.person),
-                  title: Selector<AppState, String>(
-                    selector: (_, appState) => appState.currentCustomer!.username,
-                    builder: (context, username, child) {
-                      return Text(username);
-                    },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ListTile(
+                    leading: const Icon(Icons.person),
+                    title: Selector<AppState, String>(
+                      selector: (_, appState) => appState.currentCustomer!.username,
+                      builder: (context, username, child) {
+                        return Text(username);
+                      },
+                    ),
+                    trailing: const Icon(Icons.arrow_forward),
                   ),
-                  trailing: const Icon(Icons.arrow_forward),
                 ),
               ),
             ),
