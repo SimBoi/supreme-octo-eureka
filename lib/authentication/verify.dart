@@ -55,14 +55,14 @@ class VerifyPhonePage extends StatelessWidget {
                               Text(
                                 'We need to verify your phone number before you can continue.\n\nWe will send you a verification code using whatsapp to the following number:',
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: theme.colorScheme.onBackground,
+                                  color: theme.colorScheme.onSurface,
                                 ),
                               ),
                               const Gap(20),
                               Text(
                                 appState.getPhoneLocalFormat(),
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: theme.colorScheme.onBackground,
+                                  color: theme.colorScheme.onSurface,
                                 ),
                               ),
                               const Gap(40),

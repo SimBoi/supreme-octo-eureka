@@ -56,6 +56,25 @@ Future<bool> login(String phone, String password, AppState appState) async {
       var jsonResponse = json.decode(response.body);
       if (jsonResponse['Result'] == 'CUSTOMER') {
         await saveCredentials(phone, password);
+
+        var jsonAppointments = json.decode(jsonResponse['CurrentAppointments']);
+        List<Lesson> appointments = [];
+        for (var jsonAppointment in jsonAppointments) {
+          appointments.add(Lesson(
+            studentID: jsonAppointment['StudentID'] as int,
+            studentName: jsonAppointment['StudentName'] as String,
+            studentPhone: jsonAppointment['StudentPhone'] as String,
+            teacherID: jsonAppointment['TeacherID'] as int,
+            teacherName: jsonAppointment['TeacherName'] as String,
+            teacherPhone: jsonAppointment['TeacherPhone'] as String,
+            title: jsonAppointment['Title'] as String,
+            startTimestamp: jsonAppointment['StartTimestamp'] as int,
+            durationMinutes: jsonAppointment['DurationMinutes'] as int,
+            isPending: jsonAppointment['IsPending'] as bool,
+            link: jsonAppointment['Link'] as String,
+          ));
+        }
+
         appState.accountType = AccountType.customer;
         appState.currentCustomer = Customer(
           id: int.parse(jsonResponse['ID']),
@@ -64,7 +83,7 @@ Future<bool> login(String phone, String password, AppState appState) async {
           password: password,
           oneSignalID: '123', // TODO: get the real OneSignal ID
           isVerified: jsonResponse['IsVerified'] == '1',
-          currentAppointments: jsonResponse['CurrentAppointments'], // TODO: parse the appointments list
+          currentAppointments: appointments,
         );
         return true;
       } else if (jsonResponse['Result'] == 'BARBER') {

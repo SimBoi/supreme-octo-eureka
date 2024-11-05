@@ -7,6 +7,34 @@ enum AccountType {
   teacher,
 }
 
+class Lesson {
+  int studentID;
+  String studentName;
+  String studentPhone;
+  int teacherID;
+  String teacherName;
+  String teacherPhone;
+  String title;
+  int startTimestamp;
+  int durationMinutes;
+  bool isPending;
+  String link;
+
+  Lesson({
+    required this.studentID,
+    required this.studentName,
+    required this.studentPhone,
+    required this.teacherID,
+    required this.teacherName,
+    required this.teacherPhone,
+    required this.title,
+    required this.startTimestamp,
+    required this.durationMinutes,
+    required this.isPending,
+    required this.link,
+  });
+}
+
 class Customer {
   int id;
   String username;
@@ -14,7 +42,7 @@ class Customer {
   String password;
   String oneSignalID;
   bool isVerified;
-  List<String> currentAppointments;
+  List<Lesson> currentAppointments;
 
   Customer({
     required this.id,
@@ -30,16 +58,14 @@ class Customer {
 class Teacher {
   int id;
   String username;
-  String profileImage;
   String phone;
   String password;
   String oneSignalID;
-  List<String> currentAppointments;
+  List<Lesson> currentAppointments;
 
   Teacher({
     required this.id,
     required this.username,
-    required this.profileImage,
     required this.phone,
     required this.password,
     required this.oneSignalID,
@@ -49,7 +75,6 @@ class Teacher {
   static Teacher empty = Teacher(
     id: 0,
     username: '',
-    profileImage: '',
     phone: '',
     password: '',
     oneSignalID: '',
@@ -58,7 +83,7 @@ class Teacher {
 }
 
 class AppState extends ChangeNotifier {
-  Uri uri = Uri.http('5.29.135.161:8000', '/handler.php');
+  Uri uri = Uri.http('5.29.135.161:8000', '/supreme-octo-eureka-backend/handler.php');
   static const int verificationCodeLength = 6;
   late GlobalKey<NavigatorState> navigatorKey;
   late GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey;
@@ -95,7 +120,11 @@ class AppState extends ChangeNotifier {
     );
   }
 
-  void showAlertDialog({required Widget content, bool barrierDismissible = true, List<Widget>? actions}) {
+  void showAlertDialog({
+    required Widget content,
+    bool barrierDismissible = true,
+    List<Widget>? actions,
+  }) {
     showDialog<void>(
       context: navigatorKey.currentContext!,
       barrierDismissible: barrierDismissible,
@@ -105,6 +134,36 @@ class AppState extends ChangeNotifier {
           actions: actions,
         );
       },
+    );
+  }
+
+  void showInputDialog({
+    required String message,
+    required Function(String) onSubmit,
+    bool barrierDismissible = true,
+  }) {
+    TextEditingController controller = TextEditingController();
+
+    showAlertDialog(
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(message),
+          TextField(
+            controller: controller,
+          ),
+        ],
+      ),
+      barrierDismissible: barrierDismissible,
+      actions: [
+        TextButton(
+          onPressed: () {
+            onSubmit(controller.text);
+            Navigator.of(navigatorKey.currentContext!).pop();
+          },
+          child: const Icon(Icons.send),
+        ),
+      ],
     );
   }
 
@@ -174,5 +233,23 @@ class AppState extends ChangeNotifier {
 
   String getPassword() {
     return accountType == AccountType.customer ? currentCustomer!.password : currentTeacher!.password;
+  }
+
+  void addLesson(Lesson lesson) {
+    if (accountType == AccountType.customer) {
+      currentCustomer!.currentAppointments = List.from(currentCustomer!.currentAppointments)..add(lesson);
+    } else {
+      currentTeacher!.currentAppointments = List.from(currentTeacher!.currentAppointments)..add(lesson);
+    }
+    notifyListeners();
+  }
+
+  void removeLesson(int startTimestamp, {int studentID = 0}) {
+    if (accountType == AccountType.customer) {
+      currentCustomer!.currentAppointments = currentCustomer!.currentAppointments.where((lesson) => lesson.startTimestamp != startTimestamp).toList();
+    } else {
+      currentTeacher!.currentAppointments = currentTeacher!.currentAppointments.where((lesson) => lesson.startTimestamp != startTimestamp || lesson.studentID != studentID).toList();
+    }
+    notifyListeners();
   }
 }
