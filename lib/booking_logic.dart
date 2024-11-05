@@ -36,6 +36,8 @@ Future<bool> orderLesson(
       appState.showErrorSnackBar(e.toString());
       return false;
     }
+  } else {
+    appState.showErrorSnackBar('Error ${response.statusCode}');
   }
 
   return false;
