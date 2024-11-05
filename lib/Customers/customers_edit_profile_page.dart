@@ -3,9 +3,10 @@ import 'package:gap/gap.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supreme_octo_eureka/authentication/auth_logic.dart';
 
-class EditProfilePage extends StatelessWidget {
-  EditProfilePage({super.key});
+class EditCustomerProfilePage extends StatelessWidget {
+  EditCustomerProfilePage({super.key});
 
   final ValueNotifier<bool> isChanged = ValueNotifier<bool>(false);
   final ValueNotifier<String> newName = ValueNotifier<String>('');
@@ -105,6 +106,31 @@ class EditProfilePage extends StatelessWidget {
                       )
                     : const Gap(0);
               },
+            ),
+            const Gap(16),
+            ElevatedButton(
+              onPressed: () {
+                appState.showAlertDialog(
+                  content: const Text('Are you sure you want to logout?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        logout(appState);
+                        Navigator.of(context).popUntil((route) => false);
+                        Navigator.of(context).pushNamed('/');
+                      },
+                      child: const Text('Logout'),
+                    ),
+                  ],
+                );
+              },
+              child: const Text('Logout'),
             ),
           ],
         ),

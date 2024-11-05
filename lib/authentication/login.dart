@@ -147,7 +147,7 @@ class LoginPage extends StatelessWidget {
     bool result = await login(_phoneController.text, _passController.text, appState);
     if (result && context.mounted) {
       appState.showMsgSnackBar('Logged in successfully!');
-      if (!appState.currentCustomer!.isVerified) {
+      if (appState.accountType == AccountType.customer && !appState.currentCustomer!.isVerified) {
         if (!(await Navigator.of(context).pushNamed('/auth/verify_phone') as bool)) {
           return;
         }

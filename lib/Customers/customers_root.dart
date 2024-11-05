@@ -33,7 +33,7 @@ class CustomersRoot extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => EditProfilePage()),
+                    MaterialPageRoute(builder: (context) => EditCustomerProfilePage()),
                   );
                 },
                 child: Padding(

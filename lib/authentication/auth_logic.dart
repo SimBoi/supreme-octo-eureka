@@ -44,7 +44,7 @@ Future<bool> login(String phone, String password, AppState appState) async {
   var response = await appState.dbRequest(
     body: {
       'Action': 'Login',
-      'AccountType': 'Customer',
+      'AccountType': 'None',
       'Phone': phone,
       'Password': password,
       'OneSignalID': '123' // TODO: get the real OneSignal ID
@@ -86,9 +86,36 @@ Future<bool> login(String phone, String password, AppState appState) async {
           currentAppointments: appointments,
         );
         return true;
-      } else if (jsonResponse['Result'] == 'BARBER') {
+      } else if (jsonResponse['Result'] == 'TEACHER') {
         await saveCredentials(phone, password);
-        ////////////////////////////// TODO: update currentBarber
+
+        var jsonAppointments = json.decode(jsonResponse['CurrentAppointments']);
+        List<Lesson> appointments = [];
+        for (var jsonAppointment in jsonAppointments) {
+          appointments.add(Lesson(
+            studentID: jsonAppointment['StudentID'] as int,
+            studentName: jsonAppointment['StudentName'] as String,
+            studentPhone: jsonAppointment['StudentPhone'] as String,
+            teacherID: jsonAppointment['TeacherID'] as int,
+            teacherName: jsonAppointment['TeacherName'] as String,
+            teacherPhone: jsonAppointment['TeacherPhone'] as String,
+            title: jsonAppointment['Title'] as String,
+            startTimestamp: jsonAppointment['StartTimestamp'] as int,
+            durationMinutes: jsonAppointment['DurationMinutes'] as int,
+            isPending: jsonAppointment['IsPending'] as bool,
+            link: jsonAppointment['Link'] as String,
+          ));
+        }
+
+        appState.accountType = AccountType.teacher;
+        appState.currentTeacher = Teacher(
+          id: int.parse(jsonResponse['ID']),
+          username: jsonResponse['Username'],
+          phone: phone,
+          password: password,
+          oneSignalID: '123', // TODO: get the real OneSignal ID
+          currentAppointments: appointments,
+        );
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
         appState.showErrorSnackBar('Wrong phone number!');
@@ -97,19 +124,26 @@ Future<bool> login(String phone, String password, AppState appState) async {
         appState.showErrorSnackBar('Wrong passowrd!');
         return false;
       }
-      throw 'error';
+      throw jsonResponse['Result'];
     } on FormatException {
       appState.showErrorSnackBar('Json Format Error');
       // log the output of response.body
       log(response.body);
       return false;
     } catch (e) {
-      appState.showErrorSnackBar('Unexpected Error');
+      appState.showErrorSnackBar(e.toString());
       return false;
     }
   }
 
   return false;
+}
+
+Future<void> logout(AppState appState) async {
+  await saveCredentials('', '');
+  appState.accountType = AccountType.none;
+  appState.currentCustomer = null;
+  appState.currentTeacher = null;
 }
 
 bool isPasswordStrong(String password, AppState appState) {
