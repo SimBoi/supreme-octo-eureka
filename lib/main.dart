@@ -1,3 +1,4 @@
+import 'package:supreme_octo_eureka/Teachers/teachers_root.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
 import 'package:supreme_octo_eureka/authentication/auth_main.dart';
 import 'package:supreme_octo_eureka/authentication/verify.dart';
@@ -59,6 +60,7 @@ class MyApp extends StatelessWidget {
           '/': (context) => const AuthMain(),
           '/auth/verify_phone': (BuildContext context) => VerifyPhonePage(),
           '/customer/root': (BuildContext context) => const CustomersRoot(),
+          '/teacher/root': (BuildContext context) => const TeachersRoot(),
         },
         navigatorKey: appState.navigatorKey,
         scaffoldMessengerKey: appState.scaffoldMessengerKey,
