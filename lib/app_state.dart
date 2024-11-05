@@ -252,4 +252,13 @@ class AppState extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  void updateProfile(String newUsername) {
+    if (accountType == AccountType.customer) {
+      currentCustomer!.username = newUsername;
+    } else {
+      currentTeacher!.username = newUsername;
+    }
+    notifyListeners();
+  }
 }

@@ -18,7 +18,7 @@ class CustomersRoot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var appState = context.read<AppState>();
+    // var appState = context.read<AppState>();
 
     return Scaffold(
       appBar: AppBar(
@@ -33,12 +33,17 @@ class CustomersRoot extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const EditProfilePage()),
+                    MaterialPageRoute(builder: (context) => EditProfilePage()),
                   );
                 },
                 child: ListTile(
                   leading: const Icon(Icons.person),
-                  title: Text(appState.currentCustomer!.username),
+                  title: Selector<AppState, String>(
+                    selector: (_, appState) => appState.currentCustomer!.username,
+                    builder: (context, username, child) {
+                      return Text(username);
+                    },
+                  ),
                   trailing: const Icon(Icons.arrow_forward),
                 ),
               ),
