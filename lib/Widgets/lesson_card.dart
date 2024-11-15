@@ -39,7 +39,11 @@ class LessonCard extends StatelessWidget {
       child: InkWell(
         onTap: () {
           if (!lesson.isPending) {
-            launchUrl(Uri.parse(lesson.link));
+            try {
+              launchUrl(Uri.parse(lesson.link));
+            } catch (e) {
+              appState.showErrorSnackBar(e.toString());
+            }
           }
         },
         child: Padding(
@@ -73,13 +77,15 @@ class LessonCard extends StatelessWidget {
                 ),
               ),
               if (lesson.isPending)
-                Center(
-                  child: Text(
-                    'Lesson pending...\n A teacher will be assigned soon',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).disabledColor,
-                        ),
+                ListTile(
+                  title: Center(
+                    child: Text(
+                      'Lesson pending...\n A teacher will be assigned soon',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context).disabledColor,
+                          ),
+                    ),
                   ),
                 )
               else
@@ -87,78 +93,95 @@ class LessonCard extends StatelessWidget {
                   leading: const Icon(Icons.location_on),
                   title: Text(lesson.link),
                 ),
-              if (isCustomer)
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      appState.showAlertDialog(
-                        content: const Text('Are you sure you want to cancel this lesson?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              cancelLesson(lesson, appState);
-                              Navigator.of(appState.navigatorKey.currentContext!).pop();
-                            },
-                            child: const Text('Cancel Lesson'),
-                          ),
-                        ],
-                      );
-                    },
-                    child: const Icon(Icons.cancel),
-                  ),
-                )
-              else ...[
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (lesson.isPending) {
-                        appState.showInputDialog(
-                          message: 'Enter the link for the virtual lesson:',
-                          onSubmit: (link) {
+              ListTile(
+                title: isCustomer
+                    ? Align(
+                        child: ElevatedButton(
+                          onPressed: () {
                             appState.showAlertDialog(
-                              content: const Text('Are you sure you want to accept this lesson?'),
+                              content: const Text('Are you sure you want to cancel this lesson?'),
                               actions: [
                                 TextButton(
                                   onPressed: () {
-                                    acceptLesson(lesson, link, appState);
+                                    cancelLesson(lesson, appState);
                                     Navigator.of(appState.navigatorKey.currentContext!).pop();
                                   },
-                                  child: const Text('Accept Lesson'),
+                                  child: const Text('Cancel Lesson'),
                                 ),
                               ],
                             );
                           },
-                        );
-                      } else {
-                        appState.showAlertDialog(
-                          content: const Text('Are you sure you want to reject this lesson?'),
-                          actions: [
-                            TextButton(
+                          child: const Icon(Icons.cancel),
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          if (!lesson.isPending) ...[
+                            ElevatedButton(
                               onPressed: () {
-                                rejectLesson(lesson, appState);
-                                Navigator.of(appState.navigatorKey.currentContext!).pop();
+                                appState.showInputDialog(
+                                  message: 'Enter the link for the virtual lesson:',
+                                  onSubmit: (link) {
+                                    appState.showAlertDialog(
+                                      content: const Text('Are you sure you want to edit this lesson?'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            editLessonLink(lesson, link, appState);
+                                            Navigator.of(appState.navigatorKey.currentContext!).pop();
+                                          },
+                                          child: const Text('Edit Link'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
                               },
-                              child: const Text('Reject Lesson'),
+                              child: const Icon(Icons.edit),
                             ),
+                            const Gap(8),
                           ],
-                        );
-                      }
-                    },
-                    child: lesson.isPending ? const Text('Accept') : const Icon(Icons.cancel),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.bottomLeft,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Edit link logic here
-                    },
-                    child: const Icon(Icons.edit),
-                  ),
-                ),
-              ],
+                          ElevatedButton(
+                            onPressed: () {
+                              if (lesson.isPending) {
+                                appState.showInputDialog(
+                                  message: 'Enter the link for the virtual lesson:',
+                                  onSubmit: (link) {
+                                    appState.showAlertDialog(
+                                      content: const Text('Are you sure you want to accept this lesson?'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            acceptLesson(lesson, link, appState);
+                                            Navigator.of(appState.navigatorKey.currentContext!).pop();
+                                          },
+                                          child: const Text('Accept Lesson'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              } else {
+                                appState.showAlertDialog(
+                                  content: const Text('Are you sure you want to reject this lesson?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        rejectLesson(lesson, appState);
+                                        Navigator.of(appState.navigatorKey.currentContext!).pop();
+                                      },
+                                      child: const Text('Reject Lesson'),
+                                    ),
+                                  ],
+                                );
+                              }
+                            },
+                            child: lesson.isPending ? const Text('Accept') : const Icon(Icons.cancel),
+                          ),
+                        ],
+                      ),
+              ),
             ],
           ),
         ),

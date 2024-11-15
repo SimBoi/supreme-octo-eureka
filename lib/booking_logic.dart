@@ -130,6 +130,55 @@ Future<bool> acceptLesson(
   return false;
 }
 
+Future<bool> editLessonLink(
+  Lesson lesson,
+  String newLink,
+  AppState appState,
+) async {
+  var response = await appState.dbRequest(
+    body: {
+      'Action': 'EditLessonLink',
+      'AccountType': 'Teacher',
+      'Phone': appState.currentTeacher!.phone,
+      'Password': appState.currentTeacher!.password,
+      'StudentID': lesson.studentID.toString(),
+      'StartTimestamp': lesson.startTimestamp.toString(),
+      'NewLink': newLink,
+    },
+  );
+
+  if (response.statusCode == 200) {
+    try {
+      var jsonResponse = json.decode(response.body);
+      if (jsonResponse['Result'] == 'SUCCESS') {
+        lesson.link = newLink;
+        appState.updateLessonLink(lesson.startTimestamp, newLink);
+        appState.showMsgSnackBar('Lesson Link Updated');
+        return true;
+      } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
+        // TODO: logout
+        return false;
+      } else if (jsonResponse['Result'] == 'LESSON_DOESNT_EXIST') {
+        appState.showErrorSnackBar('Lesson Does Not Exist');
+        // TODO: refresh lessons
+        return false;
+      } else if (jsonResponse['Result'] == 'WRONG_PASSWORD') {
+        appState.showErrorSnackBar('Wrong Password');
+        return false;
+      }
+      throw jsonResponse['Result'];
+    } on FormatException {
+      appState.showErrorSnackBar('Json Format Error');
+      return false;
+    } catch (e) {
+      appState.showErrorSnackBar(e.toString());
+      return false;
+    }
+  }
+
+  return false;
+}
+
 Future<bool> rejectLesson(
   Lesson lesson,
   AppState appState,
