@@ -13,8 +13,6 @@ class SingUpPage extends StatelessWidget {
     text: '05',
   );
   final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passController = TextEditingController();
-  final TextEditingController _repassController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +65,7 @@ class SingUpPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Gap(25),
+                const Gap(16),
                 SizedBox(
                   height: 56,
                   child: TextField(
@@ -92,62 +90,17 @@ class SingUpPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Gap(25),
-                Row(
-                  // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: TextField(
-                          controller: _passController,
-                          obscureText: true,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
-                            ),
-                            labelText: 'Password',
-                          ),
-                        ),
-                      ),
-                    ),
-                    const Gap(15),
-                    Expanded(
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: TextField(
-                          controller: _repassController,
-                          obscureText: true,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
-                            ),
-                            labelText: 'Confirm Password',
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const Gap(25),
+                const Gap(16),
                 SizedBox(
                   width: double.infinity,
-                  height: 56,
+                  height: 50,
                   child: ElevatedButton(
                     onPressed: () async {
-                      if (!isPasswordStrong(_passController.text, appState)) {
-                        return;
-                      } else if (_passController.text != _repassController.text) {
-                        appState.showErrorSnackBar('Passwords do not match!');
-                      } else {
-                        bool result = await signup(_phoneController.text, _passController.text, _usernameController.text, appState);
-                        if (result && context.mounted) {
-                          appState.showMsgSnackBar('Account created successfully!');
-                          pageController.jumpToPage(1);
-                          Navigator.of(context).pushNamed('/auth/verify_phone');
-                        }
+                      bool result = await signup(_phoneController.text, _usernameController.text, appState);
+                      if (result && context.mounted) {
+                        appState.showMsgSnackBar('Account created successfully!');
+                        pageController.jumpToPage(1);
+                        Navigator.of(context).pushNamed('/auth/verify_phone');
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -166,7 +119,7 @@ class SingUpPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Gap(15),
+                const Gap(16),
                 Row(
                   children: [
                     Text(

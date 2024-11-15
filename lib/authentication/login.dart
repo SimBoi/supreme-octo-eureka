@@ -13,7 +13,6 @@ class LoginPage extends StatelessWidget {
   final TextEditingController _phoneController = TextEditingController(
     text: '05',
   );
-  final TextEditingController _passController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -66,24 +65,10 @@ class LoginPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Gap(25),
-                SizedBox(
-                  height: 56,
-                  child: TextField(
-                    controller: _passController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                      ),
-                      labelText: 'Password',
-                    ),
-                  ),
-                ),
-                const Gap(25),
+                const Gap(16),
                 SizedBox(
                   width: double.maxFinite,
-                  height: 56,
+                  height: 50,
                   child: ElevatedButton(
                     onPressed: () => _onLoginButtonPressed(context, appState),
                     style: ElevatedButton.styleFrom(
@@ -102,7 +87,7 @@ class LoginPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Gap(15),
+                const Gap(16),
                 Row(
                   children: [
                     Text(
@@ -127,14 +112,6 @@ class LoginPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                const Gap(15),
-                Text(
-                  'Forgot Password?',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
               ],
             ),
           ),
@@ -144,13 +121,56 @@ class LoginPage extends StatelessWidget {
   }
 
   void _onLoginButtonPressed(BuildContext context, AppState appState) async {
-    bool result = await login(_phoneController.text, _passController.text, appState);
-    if (result && context.mounted) {
-      appState.showMsgSnackBar('Logged in successfully!');
-      if (appState.accountType == AccountType.customer && !appState.currentCustomer!.isVerified) {
-        if (!(await Navigator.of(context).pushNamed('/auth/verify_phone') as bool)) {
-          return;
-        }
+    String phone = _phoneController.text;
+
+    // check if phone is valid
+    if (phone == '') {
+      appState.showErrorSnackBar('Phone is required!');
+      return;
+    } else if (phone.length != 10) {
+      appState.showErrorSnackBar('Phone number must be 10 digits!');
+      return;
+    }
+
+    // convert phone from the format 05XXXXXXXX to the format 9725XXXXXXXX
+    phone = '972${phone.substring(1)}';
+
+    String response = await getAccountType(phone, appState);
+    if (response == 'Customer') {
+      appState.accountType = AccountType.customer;
+      appState.currentCustomer = Customer(
+        id: 0,
+        username: '',
+        phone: phone,
+        password: '',
+        oneSignalID: '',
+        currentAppointments: [],
+      );
+    } else if (response == 'Teacher') {
+      appState.accountType = AccountType.teacher;
+      appState.currentTeacher = Teacher(
+        id: 0,
+        username: '',
+        phone: phone,
+        password: '',
+        oneSignalID: '',
+        currentAppointments: [],
+      );
+    } else if (response == 'None') {
+      appState.accountType = AccountType.none;
+      appState.showErrorSnackBar('Phone number is not associated with any account!');
+      return;
+    } else {
+      return;
+    }
+
+    if (context.mounted) {
+      if (!(await Navigator.of(context).pushNamed('/auth/verify_phone') as bool)) {
+        return;
+      }
+
+      if (!(await login(phone, appState.getPassword(), appState))) {
+        return;
       }
 
       if (context.mounted) {

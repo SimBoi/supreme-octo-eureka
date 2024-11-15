@@ -24,23 +24,36 @@ Future<void> saveCredentials(String newPhone, String newPassword) async {
   prefs.setString('password', newPassword);
 }
 
-Future<bool> login(String phone, String password, AppState appState) async {
-  // check if phone or password are empty
-  if (phone == '' || password == '') {
-    appState.showErrorSnackBar('Phone and password are required!');
-    return false;
-  }
+Future<String> getAccountType(String phone, AppState appState) async {
+  var response = await appState.dbRequest(
+    body: {
+      'Action': 'GetAccountType',
+      'Phone': phone,
+    },
+  );
 
-  // convert phone from the format 05XXXXXXXX to the format 9725XXXXXXXX
-  if (phone.length != 12 || !phone.startsWith('972')) {
-    if (phone.length == 10 && phone.startsWith('05')) {
-      phone = '972${phone.substring(1)}';
-    } else {
-      appState.showErrorSnackBar('Invalid phone number!');
-      return false;
+  if (response.statusCode == 200) {
+    try {
+      var jsonResponse = json.decode(response.body);
+      if (jsonResponse['Result'] == 'CUSTOMER') {
+        return 'Customer';
+      } else if (jsonResponse['Result'] == 'TEACHER') {
+        return 'Teacher';
+      } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
+        return 'None';
+      }
+      throw jsonResponse['Result'];
+    } on FormatException {
+      appState.showErrorSnackBar('Json Format Error');
+    } catch (e) {
+      appState.showErrorSnackBar(e.toString());
     }
   }
 
+  return 'ERROR';
+}
+
+Future<bool> login(String phone, String password, AppState appState) async {
   var response = await appState.dbRequest(
     body: {
       'Action': 'Login',
@@ -57,24 +70,6 @@ Future<bool> login(String phone, String password, AppState appState) async {
       if (jsonResponse['Result'] == 'CUSTOMER') {
         await saveCredentials(phone, password);
 
-        var jsonAppointments = json.decode(jsonResponse['CurrentAppointments']);
-        List<Lesson> appointments = [];
-        for (var jsonAppointment in jsonAppointments) {
-          appointments.add(Lesson(
-            studentID: jsonAppointment['StudentID'] as int,
-            studentName: jsonAppointment['StudentName'] as String,
-            studentPhone: jsonAppointment['StudentPhone'] as String,
-            teacherID: jsonAppointment['TeacherID'] as int,
-            teacherName: jsonAppointment['TeacherName'] as String,
-            teacherPhone: jsonAppointment['TeacherPhone'] as String,
-            title: jsonAppointment['Title'] as String,
-            startTimestamp: jsonAppointment['StartTimestamp'] as int,
-            durationMinutes: jsonAppointment['DurationMinutes'] as int,
-            isPending: jsonAppointment['IsPending'] as bool,
-            link: jsonAppointment['Link'] as String,
-          ));
-        }
-
         appState.accountType = AccountType.customer;
         appState.currentCustomer = Customer(
           id: int.parse(jsonResponse['ID']),
@@ -82,30 +77,12 @@ Future<bool> login(String phone, String password, AppState appState) async {
           phone: phone,
           password: password,
           oneSignalID: '123', // TODO: get the real OneSignal ID
-          isVerified: jsonResponse['IsVerified'] == '1',
-          currentAppointments: appointments,
+          currentAppointments: Lesson.fromJsonArray(jsonResponse['CurrentAppointments']),
         );
+
         return true;
       } else if (jsonResponse['Result'] == 'TEACHER') {
         await saveCredentials(phone, password);
-
-        var jsonAppointments = json.decode(jsonResponse['CurrentAppointments']);
-        List<Lesson> appointments = [];
-        for (var jsonAppointment in jsonAppointments) {
-          appointments.add(Lesson(
-            studentID: jsonAppointment['StudentID'] as int,
-            studentName: jsonAppointment['StudentName'] as String,
-            studentPhone: jsonAppointment['StudentPhone'] as String,
-            teacherID: jsonAppointment['TeacherID'] as int,
-            teacherName: jsonAppointment['TeacherName'] as String,
-            teacherPhone: jsonAppointment['TeacherPhone'] as String,
-            title: jsonAppointment['Title'] as String,
-            startTimestamp: jsonAppointment['StartTimestamp'] as int,
-            durationMinutes: jsonAppointment['DurationMinutes'] as int,
-            isPending: jsonAppointment['IsPending'] as bool,
-            link: jsonAppointment['Link'] as String,
-          ));
-        }
 
         appState.accountType = AccountType.teacher;
         appState.currentTeacher = Teacher(
@@ -114,8 +91,9 @@ Future<bool> login(String phone, String password, AppState appState) async {
           phone: phone,
           password: password,
           oneSignalID: '123', // TODO: get the real OneSignal ID
-          currentAppointments: appointments,
+          currentAppointments: Lesson.fromJsonArray(jsonResponse['CurrentAppointments']),
         );
+
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
         appState.showErrorSnackBar('Wrong phone number!');
@@ -146,29 +124,9 @@ Future<void> logout(AppState appState) async {
   appState.currentTeacher = null;
 }
 
-bool isPasswordStrong(String password, AppState appState) {
-  if (password.length < 8) {
-    appState.showErrorSnackBar('Password should be at least 8 characters');
-    return false;
-  }
-  if (!RegExp(r'(?=.*\p{L})', unicode: true).hasMatch(password)) {
-    appState.showErrorSnackBar('Password should contain at least one letter');
-    return false;
-  }
-  if (!RegExp(r'(?=.*\d)').hasMatch(password)) {
-    appState.showErrorSnackBar('Password should contain at least one number');
-    return false;
-  }
-  if (!RegExp(r'(?=.*[!@#$%^&*(),.?":{}|<>_-])').hasMatch(password)) {
-    appState.showErrorSnackBar('Password should contain at least one special character (!@#\$%^&*(),.?":{}|<>_-)');
-    return false;
-  }
-  return true;
-}
-
-Future<bool> signup(String phone, String password, String username, AppState appState) async {
+Future<bool> signup(String phone, String username, AppState appState) async {
   // check if phone or password are empty
-  if (phone == '' || password == '') {
+  if (phone == '') {
     appState.showErrorSnackBar('Phone and password are required!');
     return false;
   }
@@ -186,7 +144,6 @@ Future<bool> signup(String phone, String password, String username, AppState app
       'Action': 'Signup',
       'AccountType': 'Customer',
       'Phone': phone,
-      'Password': password,
       'Username': username,
       'OneSignalID': '123', // TODO: get the real OneSignal ID
     },
@@ -196,15 +153,14 @@ Future<bool> signup(String phone, String password, String username, AppState app
     try {
       var jsonResponse = json.decode(response.body);
       if (jsonResponse['Result'] == 'SUCCESS') {
-        await saveCredentials(phone, password);
+        await saveCredentials(phone, "");
         appState.accountType = AccountType.customer;
         appState.currentCustomer = Customer(
           id: 0,
           username: username,
           phone: phone,
-          password: password,
+          password: "",
           oneSignalID: '',
-          isVerified: false,
           currentAppointments: List.empty(),
         );
         return true;
@@ -232,13 +188,12 @@ Future<
     (
       bool,
       int
-    )> requestVerification(String phone, String password, AppState appState) async {
+    )> requestVerification(String phone, AppState appState) async {
   var response = await appState.dbRequest(
     body: {
       'Action': 'RequestVerificationCode',
-      'AccountType': 'Customer',
+      'AccountType': appState.accountType == AccountType.customer ? 'Customer' : 'Teacher',
       'Phone': phone,
-      'Password': password,
       'Language': appState.language,
     },
   );
@@ -287,13 +242,12 @@ Future<
   );
 }
 
-Future<bool> verifyPhone(String phone, String password, String verificationCode, AppState appState) async {
+Future<bool> verifyPhone(String phone, String verificationCode, AppState appState) async {
   var response = await appState.dbRequest(
     body: {
       'Action': 'VerifyPhone',
-      'AccountType': 'Customer',
+      'AccountType': appState.accountType == AccountType.customer ? 'Customer' : 'Teacher',
       'Phone': phone,
-      'Password': password,
       'VerificationCode': verificationCode,
     },
   );
@@ -302,6 +256,12 @@ Future<bool> verifyPhone(String phone, String password, String verificationCode,
     try {
       var jsonResponse = json.decode(response.body);
       if (jsonResponse['Result'] == 'SUCCESS') {
+        if (appState.accountType == AccountType.customer) {
+          appState.currentCustomer!.password = jsonResponse['GeneratedPassword'];
+        } else {
+          appState.currentTeacher!.password = jsonResponse['GeneratedPassword'];
+        }
+
         appState.showMsgSnackBar('Phone number verified successfully!');
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_ALREADY_VERIFIED') {

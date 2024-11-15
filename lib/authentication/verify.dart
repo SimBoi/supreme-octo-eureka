@@ -161,7 +161,7 @@ class VerifyPhonePage extends StatelessWidget {
     var (
       result,
       cooldown
-    ) = await requestVerification(appState.getPhoneInternationalFormat(), appState.getPassword(), appState);
+    ) = await requestVerification(appState.getPhoneInternationalFormat(), appState);
     if (result) {
       if (pageController.page == 0) {
         pageController.animateToPage(1, duration: const Duration(milliseconds: 500), curve: Curves.ease);
@@ -178,7 +178,7 @@ class VerifyPhonePage extends StatelessWidget {
       appState.showErrorSnackBar('Verification code must be ${AppState.verificationCodeLength} digits long!');
       return;
     }
-    bool result = await verifyPhone(appState.getPhoneInternationalFormat(), appState.getPassword(), _codeController.text, appState);
+    bool result = await verifyPhone(appState.getPhoneInternationalFormat(), _codeController.text, appState);
     if (result && context.mounted) {
       Navigator.of(context).pop(true);
     }
@@ -202,7 +202,6 @@ class ResendTimerState extends State<ResendTimer> {
   bool isTimerRunning = false;
 
   void resetTimer(int cooldown) {
-    print('resetting timer to $cooldown');
     setState(() {
       this.cooldown = cooldown;
       isTimerRunning = true;

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -33,6 +34,27 @@ class Lesson {
     required this.isPending,
     required this.link,
   });
+
+  static List<Lesson> fromJsonArray(dynamic jsonList) {
+    var jsonAppointments = json.decode(jsonList);
+    List<Lesson> lessons = [];
+    for (var jsonAppointment in jsonAppointments) {
+      lessons.add(Lesson(
+        studentID: jsonAppointment['StudentID'] as int,
+        studentName: jsonAppointment['StudentName'] as String,
+        studentPhone: jsonAppointment['StudentPhone'] as String,
+        teacherID: jsonAppointment['TeacherID'] as int,
+        teacherName: jsonAppointment['TeacherName'] as String,
+        teacherPhone: jsonAppointment['TeacherPhone'] as String,
+        title: jsonAppointment['Title'] as String,
+        startTimestamp: jsonAppointment['StartTimestamp'] as int,
+        durationMinutes: jsonAppointment['DurationMinutes'] as int,
+        isPending: jsonAppointment['IsPending'] as bool,
+        link: jsonAppointment['Link'] as String,
+      ));
+    }
+    return lessons;
+  }
 }
 
 class Customer {
@@ -41,7 +63,6 @@ class Customer {
   String phone;
   String password;
   String oneSignalID;
-  bool isVerified;
   List<Lesson> currentAppointments;
 
   Customer({
@@ -50,7 +71,6 @@ class Customer {
     required this.phone,
     required this.password,
     required this.oneSignalID,
-    required this.isVerified,
     required this.currentAppointments,
   });
 }
@@ -158,8 +178,8 @@ class AppState extends ChangeNotifier {
       actions: [
         TextButton(
           onPressed: () {
-            onSubmit(controller.text);
             Navigator.of(navigatorKey.currentContext!).pop();
+            onSubmit(controller.text);
           },
           child: const Icon(Icons.send),
         ),
@@ -240,6 +260,25 @@ class AppState extends ChangeNotifier {
       currentCustomer!.currentAppointments = List.from(currentCustomer!.currentAppointments)..add(lesson);
     } else {
       currentTeacher!.currentAppointments = List.from(currentTeacher!.currentAppointments)..add(lesson);
+    }
+    notifyListeners();
+  }
+
+  void updateLessonLink(int startTimestamp, String newLink) {
+    if (accountType == AccountType.customer) {
+      currentCustomer!.currentAppointments = List.from(currentCustomer!.currentAppointments.map((lesson) {
+        if (lesson.startTimestamp == startTimestamp) {
+          lesson.link = newLink;
+        }
+        return lesson;
+      }));
+    } else {
+      currentTeacher!.currentAppointments = List.from(currentTeacher!.currentAppointments.map((lesson) {
+        if (lesson.startTimestamp == startTimestamp) {
+          lesson.link = newLink;
+        }
+        return lesson;
+      }));
     }
     notifyListeners();
   }

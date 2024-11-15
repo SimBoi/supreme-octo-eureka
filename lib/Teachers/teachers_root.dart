@@ -1,6 +1,8 @@
 import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
+import 'package:supreme_octo_eureka/Teachers/teachers_edit_profile_page.dart';
+import 'package:supreme_octo_eureka/Teachers/teachers_pending_lessons_page.dart';
 import 'package:supreme_octo_eureka/Widgets/lesson_card.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
 
@@ -31,8 +33,7 @@ class TeachersRoot extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    // MaterialPageRoute(builder: (context) => EditTeacherProfilePage()), TODO
-                    MaterialPageRoute(builder: (context) => Scaffold(appBar: AppBar(title: const Text('Teacher Profile')))),
+                    MaterialPageRoute(builder: (context) => EditTeacherProfilePage()),
                   );
                 },
                 child: Padding(
@@ -101,7 +102,7 @@ class TeachersRoot extends StatelessWidget {
                       children: [
                         LessonCard(
                           lesson: lesson,
-                          isCustomer: true,
+                          isCustomer: false,
                         ),
                         const Gap(16),
                       ],
@@ -117,8 +118,7 @@ class TeachersRoot extends StatelessWidget {
         onPressed: () {
           Navigator.push(
             context,
-            // MaterialPageRoute(builder: (context) => const PendingLessonsPage()), TODO
-            MaterialPageRoute(builder: (context) => Scaffold(appBar: AppBar(title: const Text('Lesson Requests')))),
+            MaterialPageRoute(builder: (context) => const PendingLessonsPage()),
           );
         },
         child: const Text('View Lesson Requests'),
