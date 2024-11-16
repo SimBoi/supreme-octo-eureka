@@ -6,48 +6,63 @@ import 'package:supreme_octo_eureka/Teachers/teachers_pending_lessons_page.dart'
 import 'package:supreme_octo_eureka/Widgets/lesson_card.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
 
-// Main Widget for the app
-// A vertically scrollable page that contains:
-// 1. the app title
-// 2. a card with the customer's profile information (just the name currently), clickable to navigate to the EditProfilePage page
-// 3. a "Booked Lessons" title
-// 4. a list of LessonCards created from the app state's currentTeacher's currentAppointments list
-// 5. an "Order Lesson" persistent button on the bottom of the screen
 class TeachersRoot extends StatelessWidget {
   const TeachersRoot({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // var appState = context.read<AppState>();
+    var appState = context.read<AppState>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Supreme Octo Eureka'),
-      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: <Widget>[
-            Card(
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => EditTeacherProfilePage()),
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ListTile(
-                    leading: const Icon(Icons.person),
-                    title: Selector<AppState, String>(
-                      selector: (_, appState) => appState.currentTeacher!.username,
-                      builder: (context, username, child) {
-                        return Text(username);
-                      },
-                    ),
-                    trailing: const Icon(Icons.arrow_forward),
+            const Gap(24),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'My Schedule',
+                  style: Theme.of(context).textTheme.displaySmall,
+                ),
+                FilledButton.tonal(
+                  style: ButtonStyle(
+                    padding: WidgetStateProperty.all<EdgeInsets>(EdgeInsets.zero),
                   ),
+                  child: const Icon(Icons.person),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => EditTeacherProfilePage()),
+                    );
+                  },
+                ),
+              ],
+            ),
+            const Gap(16),
+            Card.filled(
+              color: appState.themeData.colorScheme.tertiaryContainer,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.lightbulb,
+                      color: appState.themeData.colorScheme.onTertiaryContainer,
+                    ),
+                    const Gap(8),
+                    Expanded(
+                      child: Text(
+                        'You can view and manage your upcoming lessons on this page. Tap the button at the bottom right to accept new lessons.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: appState.themeData.colorScheme.onTertiaryContainer,
+                            ),
+                        softWrap: true,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -114,14 +129,15 @@ class TeachersRoot extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: ElevatedButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const PendingLessonsPage()),
           );
         },
-        child: const Text('View Lesson Requests'),
+        icon: const Icon(Icons.add),
+        label: const Text('Accept Lessons'),
       ),
     );
   }

@@ -132,10 +132,10 @@ class AppState extends ChangeNotifier {
         content: Text(
           errorMsg,
           style: TextStyle(
-            color: themeData.colorScheme.onError,
+            color: themeData.colorScheme.onErrorContainer,
           ),
         ),
-        backgroundColor: themeData.colorScheme.error,
+        backgroundColor: themeData.colorScheme.errorContainer,
       ),
     );
   }

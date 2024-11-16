@@ -72,8 +72,8 @@ class LoginPage extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () => _onLoginButtonPressed(context, appState),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.colorScheme.secondary,
-                      foregroundColor: theme.colorScheme.onSecondary,
+                      backgroundColor: theme.colorScheme.secondaryContainer,
+                      foregroundColor: theme.colorScheme.onSecondaryContainer,
                       shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(10)),
                       ),
@@ -81,7 +81,7 @@ class LoginPage extends StatelessWidget {
                     child: Text(
                       'Login',
                       style: theme.textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.onSecondary,
+                        color: theme.colorScheme.onSecondaryContainer,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -93,7 +93,7 @@ class LoginPage extends StatelessWidget {
                     Text(
                       'Don’t have an account?',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.outlineVariant,
+                        color: theme.colorScheme.outline,
                         fontWeight: FontWeight.w500,
                       ),
                     ),

@@ -104,8 +104,8 @@ class SingUpPage extends StatelessWidget {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.colorScheme.secondary,
-                      foregroundColor: theme.colorScheme.onSecondary,
+                      backgroundColor: theme.colorScheme.secondaryContainer,
+                      foregroundColor: theme.colorScheme.onSecondaryContainer,
                       shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(10)),
                       ),
@@ -113,7 +113,7 @@ class SingUpPage extends StatelessWidget {
                     child: Text(
                       'Create account',
                       style: theme.textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.onSecondary,
+                        color: theme.colorScheme.onSecondaryContainer,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -125,7 +125,7 @@ class SingUpPage extends StatelessWidget {
                     Text(
                       'have an account?',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.outlineVariant,
+                        color: theme.colorScheme.outline,
                         fontWeight: FontWeight.w500,
                       ),
                     ),

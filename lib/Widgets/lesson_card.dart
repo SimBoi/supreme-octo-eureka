@@ -96,7 +96,8 @@ class LessonCard extends StatelessWidget {
               ListTile(
                 title: isCustomer
                     ? Align(
-                        child: ElevatedButton(
+                        alignment: Alignment.centerRight,
+                        child: IconButton(
                           onPressed: () {
                             appState.showAlertDialog(
                               content: const Text('Are you sure you want to cancel this lesson?'),
@@ -111,14 +112,14 @@ class LessonCard extends StatelessWidget {
                               ],
                             );
                           },
-                          child: const Icon(Icons.cancel),
+                          icon: const Icon(Icons.cancel),
                         ),
                       )
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           if (!lesson.isPending) ...[
-                            ElevatedButton(
+                            IconButton(
                               onPressed: () {
                                 appState.showInputDialog(
                                   message: 'Enter the link for the virtual lesson:',
@@ -138,11 +139,11 @@ class LessonCard extends StatelessWidget {
                                   },
                                 );
                               },
-                              child: const Icon(Icons.edit),
+                              icon: const Icon(Icons.edit),
                             ),
                             const Gap(8),
                           ],
-                          ElevatedButton(
+                          IconButton(
                             onPressed: () {
                               if (lesson.isPending) {
                                 appState.showInputDialog(
@@ -177,7 +178,7 @@ class LessonCard extends StatelessWidget {
                                 );
                               }
                             },
-                            child: lesson.isPending ? const Text('Accept') : const Icon(Icons.cancel),
+                            icon: lesson.isPending ? const Icon(Icons.add_circle) : const Icon(Icons.cancel),
                           ),
                         ],
                       ),

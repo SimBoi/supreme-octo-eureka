@@ -110,8 +110,8 @@ class VerifyPhonePage extends StatelessWidget {
                                 child: ElevatedButton(
                                   onPressed: () => _onConfirmCodeButtonPressed(context, appState),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: theme.colorScheme.secondary,
-                                    foregroundColor: theme.colorScheme.onSecondary,
+                                    backgroundColor: theme.colorScheme.secondaryContainer,
+                                    foregroundColor: theme.colorScheme.onSecondaryContainer,
                                     shape: const RoundedRectangleBorder(
                                       borderRadius: BorderRadius.all(Radius.circular(10)),
                                     ),
@@ -119,7 +119,7 @@ class VerifyPhonePage extends StatelessWidget {
                                   child: Text(
                                     'Confirm',
                                     style: theme.textTheme.titleMedium?.copyWith(
-                                      color: theme.colorScheme.onSecondary,
+                                      color: theme.colorScheme.onSecondaryContainer,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -137,7 +137,7 @@ class VerifyPhonePage extends StatelessWidget {
                                   'A ${AppState.verificationCodeLength}-digit verification code has been sent to ${appState.getPhoneLocalFormat()}',
                                   textAlign: TextAlign.center,
                                   style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.outlineVariant,
+                                    color: theme.colorScheme.outline,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),

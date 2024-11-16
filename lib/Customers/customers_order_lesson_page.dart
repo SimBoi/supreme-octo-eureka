@@ -110,7 +110,7 @@ class _OrderLessonPageState extends State<OrderLessonPage> {
             nextPage: _nextPage,
             initialDuration: _duration,
           ),
-          OrderLessonReviewPage(
+          OrderLessonPaymentPage(
             title: _title,
             dateTime: _dateTime,
             duration: _duration,
@@ -277,12 +277,12 @@ class OrderLessonDurationPage extends StatelessWidget {
   }
 }
 
-class OrderLessonReviewPage extends StatelessWidget {
+class OrderLessonPaymentPage extends StatelessWidget {
   final String title;
   final DateTime dateTime;
   final int duration;
 
-  const OrderLessonReviewPage({
+  const OrderLessonPaymentPage({
     super.key,
     required this.title,
     required this.dateTime,
@@ -297,24 +297,35 @@ class OrderLessonReviewPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(title),
-            const Gap(16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.calendar_today),
-                const Gap(8),
-                Text('${dateTime.day}/${dateTime.month} ${dateTime.hour % 12 == 0 ? 12 : dateTime.hour % 12}:${dateTime.minute.toString().padLeft(2, '0')} ${dateTime.hour >= 12 ? 'PM' : 'AM'}'),
-              ],
-            ),
-            const Gap(16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.access_time),
-                const Gap(8),
-                if (duration >= 60) Text('${(duration / 60).toStringAsFixed((duration % 60 == 0) ? 0 : 1)} hours') else Text('$duration minutes'),
-              ],
+            IntrinsicWidth(
+              child: Card.outlined(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Text(title),
+                      const Gap(16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.calendar_today),
+                          const Gap(8),
+                          Text('${dateTime.day}/${dateTime.month} ${dateTime.hour % 12 == 0 ? 12 : dateTime.hour % 12}:${dateTime.minute.toString().padLeft(2, '0')} ${dateTime.hour >= 12 ? 'PM' : 'AM'}'),
+                        ],
+                      ),
+                      const Gap(16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.access_time),
+                          const Gap(8),
+                          if (duration >= 60) Text('${(duration / 60).toStringAsFixed((duration % 60 == 0) ? 0 : 1)} hours') else Text('$duration minutes'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
             const Gap(16),
             ElevatedButton(
