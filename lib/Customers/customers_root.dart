@@ -55,7 +55,7 @@ class CustomersRoot extends StatelessWidget {
                     const Gap(8),
                     Expanded(
                       child: Text(
-                        'This page allows you to view and manage your ordered lessons.',
+                        'You can view and manage your ordered lessons on this page. Tap the button at the bottom right to order a new lesson.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: appState.themeData.colorScheme.onTertiaryContainer,
                             ),
