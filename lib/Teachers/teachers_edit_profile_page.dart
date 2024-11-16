@@ -109,6 +109,9 @@ class EditTeacherProfilePage extends StatelessWidget {
             ),
             const Gap(16),
             ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(appState.themeData.colorScheme.errorContainer),
+              ),
               onPressed: () {
                 appState.showAlertDialog(
                   content: const Text('Are you sure you want to logout?'),
@@ -130,7 +133,10 @@ class EditTeacherProfilePage extends StatelessWidget {
                   ],
                 );
               },
-              child: const Text('Logout'),
+              child: Text(
+                'Logout',
+                style: TextStyle(color: appState.themeData.colorScheme.onErrorContainer),
+              ),
             ),
           ],
         ),

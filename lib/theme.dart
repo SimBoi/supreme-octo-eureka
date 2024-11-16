@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
 
-// http://material-foundation.github.io?primary=%23BD93F9&secondary=%2350FA7B&tertiary=%23FF79C6&error=%23FF5555&colorMatch=true
+// http://material-foundation.github.io/material-theme-builder?primary=%23BD93F9&secondary=%2350FA7B&tertiary=%23FF79C6&error=%23FF5555&colorMatch=true
 class MaterialTheme {
   final TextTheme textTheme;
 
