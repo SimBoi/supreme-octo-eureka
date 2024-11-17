@@ -72,11 +72,11 @@ class LessonCard extends StatelessWidget {
                     const Gap(8),
                     const Icon(Icons.access_time),
                     const Gap(8),
-                    Text('${lesson.durationMinutes} mins'),
+                    if (lesson.durationMinutes >= 60) Text('${(lesson.durationMinutes / 60).toStringAsFixed((lesson.durationMinutes % 60 == 0) ? 0 : 1)} hours') else Text('$lesson.durationMinutes minutes'),
                   ],
                 ),
               ),
-              if (lesson.isPending)
+              if (lesson.isPending && isCustomer)
                 ListTile(
                   title: Center(
                     child: Text(
@@ -88,7 +88,7 @@ class LessonCard extends StatelessWidget {
                     ),
                   ),
                 )
-              else
+              else if (!lesson.isPending)
                 ListTile(
                   leading: const Icon(Icons.location_on),
                   title: Text(lesson.link),

@@ -18,7 +18,7 @@ class CustomersRoot extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: <Widget>[
-            const Gap(24),
+            const Gap(32),
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -41,7 +41,7 @@ class CustomersRoot extends StatelessWidget {
                 ),
               ],
             ),
-            const Gap(16),
+            const Gap(24),
             Card.filled(
               color: appState.themeData.colorScheme.tertiaryContainer,
               child: Padding(
