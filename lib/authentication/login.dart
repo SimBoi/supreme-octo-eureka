@@ -132,9 +132,6 @@ class LoginPage extends StatelessWidget {
       return;
     }
 
-    // convert phone from the format 05XXXXXXXX to the format 9725XXXXXXXX
-    phone = '972${phone.substring(1)}';
-
     String response = await getAccountType(phone, appState);
     if (response == 'Customer') {
       appState.accountType = AccountType.customer;

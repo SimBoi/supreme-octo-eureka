@@ -95,14 +95,7 @@ class SingUpPage extends StatelessWidget {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: () async {
-                      bool result = await signup(_phoneController.text, _usernameController.text, appState);
-                      if (result && context.mounted) {
-                        appState.showMsgSnackBar('Account created successfully!');
-                        pageController.jumpToPage(1);
-                        Navigator.of(context).pushNamed('/auth/verify_phone');
-                      }
-                    },
+                    onPressed: () => _onSignUpButtonPressed(context, appState),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: theme.colorScheme.secondaryContainer,
                       foregroundColor: theme.colorScheme.onSecondaryContainer,
@@ -150,5 +143,31 @@ class SingUpPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _onSignUpButtonPressed(BuildContext context, AppState appState) async {
+    var phone = _phoneController.text;
+    var username = _usernameController.text;
+
+    bool result = await signup(phone, username, appState);
+    if (result && context.mounted) {
+      appState.showMsgSnackBar('Account created successfully!');
+
+      if (!(await Navigator.of(context).pushNamed('/auth/verify_phone') as bool)) {
+        return;
+      }
+
+      if (!(await login(phone, appState.getPassword(), appState))) {
+        if (context.mounted) {
+          pageController.jumpToPage(1);
+        }
+        return;
+      }
+
+      if (context.mounted) {
+        Navigator.of(context).popUntil((route) => false);
+        Navigator.of(context).pushNamed('/${appState.accountType.name}/root');
+      }
+    }
   }
 }

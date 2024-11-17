@@ -25,6 +25,19 @@ Future<void> saveCredentials(String newPhone, String newPassword) async {
 }
 
 Future<String> getAccountType(String phone, AppState appState) async {
+  if (phone == '') {
+    appState.showErrorSnackBar('Phone number is required!');
+    return 'ERROR';
+  }
+
+  // convert phone from the format 05XXXXXXXX to the format 9725XXXXXXXX
+  if (phone.length == 10 && phone.startsWith('05')) {
+    phone = '972${phone.substring(1)}';
+  } else if (phone.length != 12 || !phone.startsWith('9725')) {
+    appState.showErrorSnackBar('Invalid phone number!');
+    return 'ERROR';
+  }
+
   var response = await appState.dbRequest(
     body: {
       'Action': 'GetAccountType',
@@ -54,6 +67,20 @@ Future<String> getAccountType(String phone, AppState appState) async {
 }
 
 Future<bool> login(String phone, String password, AppState appState) async {
+  // check if phone or password are empty
+  if (phone == '' || password == '') {
+    appState.showErrorSnackBar('Phone and password are required!');
+    return false;
+  }
+
+  // convert phone from the format 05XXXXXXXX to the format 9725XXXXXXXX
+  if (phone.length == 10 && phone.startsWith('05')) {
+    phone = '972${phone.substring(1)}';
+  } else if (phone.length != 12 || !phone.startsWith('9725')) {
+    appState.showErrorSnackBar('Invalid phone number!');
+    return false;
+  }
+
   var response = await appState.dbRequest(
     body: {
       'Action': 'Login',
@@ -125,17 +152,21 @@ Future<void> logout(AppState appState) async {
 }
 
 Future<bool> signup(String phone, String username, AppState appState) async {
-  // check if phone or password are empty
   if (phone == '') {
-    appState.showErrorSnackBar('Phone and password are required!');
+    appState.showErrorSnackBar('Phone number is required!');
     return false;
   }
 
   // convert phone from the format 05XXXXXXXX to the format 9725XXXXXXXX
   if (phone.length == 10 && phone.startsWith('05')) {
     phone = '972${phone.substring(1)}';
-  } else {
+  } else if (phone.length != 12 || !phone.startsWith('9725')) {
     appState.showErrorSnackBar('Invalid phone number!');
+    return false;
+  }
+
+  if (username.length < 3) {
+    appState.showErrorSnackBar('Username must be at least 3 characters long!');
     return false;
   }
 
