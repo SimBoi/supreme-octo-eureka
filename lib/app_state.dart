@@ -9,6 +9,7 @@ enum AccountType {
 }
 
 class Lesson {
+  int orderID;
   int studentID;
   String studentName;
   String studentPhone;
@@ -22,6 +23,7 @@ class Lesson {
   String link;
 
   Lesson({
+    required this.orderID,
     required this.studentID,
     required this.studentName,
     required this.studentPhone,
@@ -40,6 +42,7 @@ class Lesson {
     List<Lesson> lessons = [];
     for (var jsonAppointment in jsonAppointments) {
       lessons.add(Lesson(
+        orderID: jsonAppointment['OrderID'] as int,
         studentID: jsonAppointment['StudentID'] as int,
         studentName: jsonAppointment['StudentName'] as String,
         studentPhone: jsonAppointment['StudentPhone'] as String,
@@ -57,6 +60,37 @@ class Lesson {
   }
 }
 
+class Order {
+  int id;
+  int timestamp;
+  int durationMinutes;
+  int status;
+  String? receiptURL;
+
+  Order({
+    required this.id,
+    required this.timestamp,
+    required this.durationMinutes,
+    required this.status,
+    this.receiptURL,
+  });
+
+  static List<Order> fromJsonArray(dynamic jsonList) {
+    var jsonOrders = json.decode(jsonList);
+    List<Order> orders = [];
+    for (var jsonOrder in jsonOrders) {
+      orders.add(Order(
+        id: jsonOrder['OrderID'] as int,
+        timestamp: jsonOrder['OrderTimestamp'] as int,
+        durationMinutes: jsonOrder['DurationMinutes'] as int,
+        status: jsonOrder['Status'] as int,
+        receiptURL: jsonOrder['ReceiptURL'] as String?,
+      ));
+    }
+    return orders;
+  }
+}
+
 class Customer {
   int id;
   String username;
@@ -64,6 +98,7 @@ class Customer {
   String password;
   String oneSignalID;
   List<Lesson> currentAppointments;
+  List<Order> orders;
 
   Customer({
     required this.id,
@@ -72,6 +107,7 @@ class Customer {
     required this.password,
     required this.oneSignalID,
     required this.currentAppointments,
+    required this.orders,
   });
 }
 

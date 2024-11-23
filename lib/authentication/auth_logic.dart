@@ -105,6 +105,7 @@ Future<bool> login(String phone, String password, AppState appState) async {
           password: password,
           oneSignalID: '123', // TODO: get the real OneSignal ID
           currentAppointments: Lesson.fromJsonArray(jsonResponse['CurrentAppointments']),
+          orders: Order.fromJsonArray(jsonResponse['Orders']),
         );
 
         return true;
@@ -193,6 +194,7 @@ Future<bool> signup(String phone, String username, AppState appState) async {
           password: "",
           oneSignalID: '',
           currentAppointments: List.empty(),
+          orders: List.empty(),
         );
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_EXISTS') {

@@ -1,19 +1,59 @@
 import 'dart:convert';
 import 'package:supreme_octo_eureka/app_state.dart';
 
-Future<bool> orderLesson(
+Future<String?> createOrderRequest(
   Lesson lesson,
   AppState appState,
 ) async {
   var response = await appState.dbRequest(
     body: {
-      'Action': 'OrderLesson',
+      'Action': 'CreateOrderRequest',
       'AccountType': 'Customer',
       'Phone': appState.currentCustomer!.phone,
       'Password': appState.currentCustomer!.password,
       'Title': lesson.title,
       'StartTimestamp': lesson.startTimestamp.toString(),
       'DurationMinutes': lesson.durationMinutes.toString(),
+      'Language': 'ENG', // TODO: language
+    },
+  );
+
+  if (response.statusCode == 200) {
+    try {
+      var jsonResponse = json.decode(response.body);
+      if (jsonResponse['Result'] == 'SUCCESS') {
+        lesson.orderID = jsonResponse['OrderID'] as int;
+        return jsonResponse['PaymentLink'];
+      } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST' || jsonResponse['Result'] == 'WRONG_PASSWORD') {
+        // TODO: logout
+        return null;
+      }
+      throw jsonResponse['Result'];
+    } on FormatException {
+      appState.showErrorSnackBar('Json Format Error');
+      return null;
+    } catch (e) {
+      appState.showErrorSnackBar(e.toString());
+      return null;
+    }
+  } else {
+    appState.showErrorSnackBar('Error ${response.statusCode}');
+  }
+
+  return null;
+}
+
+Future<bool> confirmOrder(
+  Lesson lesson,
+  AppState appState,
+) async {
+  var response = await appState.dbRequest(
+    body: {
+      'Action': 'ConfirmOrder',
+      'AccountType': 'Customer',
+      'Phone': appState.currentCustomer!.phone,
+      'Password': appState.currentCustomer!.password,
+      'OrderID': lesson.orderID.toString(),
     },
   );
 
@@ -24,7 +64,7 @@ Future<bool> orderLesson(
         appState.addLesson(lesson);
         appState.showMsgSnackBar('Lesson Ordered');
         return true;
-      } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
+      } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST' || jsonResponse['Result'] == 'WRONG_PASSWORD') {
         // TODO: logout
         return false;
       }

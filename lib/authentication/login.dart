@@ -142,6 +142,7 @@ class LoginPage extends StatelessWidget {
         password: '',
         oneSignalID: '',
         currentAppointments: [],
+        orders: [],
       );
     } else if (response == 'Teacher') {
       appState.accountType = AccountType.teacher;

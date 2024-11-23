@@ -110,7 +110,7 @@ class _OrderLessonPageState extends State<OrderLessonPage> {
             nextPage: _nextPage,
             initialDuration: _duration,
           ),
-          OrderLessonPaymentPage(
+          OrderLessonConfirmationPage(
             title: _title,
             dateTime: _dateTime,
             duration: _duration,
@@ -277,12 +277,12 @@ class OrderLessonDurationPage extends StatelessWidget {
   }
 }
 
-class OrderLessonPaymentPage extends StatelessWidget {
+class OrderLessonConfirmationPage extends StatelessWidget {
   final String title;
   final DateTime dateTime;
   final int duration;
 
-  const OrderLessonPaymentPage({
+  const OrderLessonConfirmationPage({
     super.key,
     required this.title,
     required this.dateTime,
@@ -332,6 +332,7 @@ class OrderLessonPaymentPage extends StatelessWidget {
               onPressed: () async {
                 AppState appState = context.read<AppState>();
                 Lesson lesson = Lesson(
+                  orderID: 0,
                   title: title,
                   startTimestamp: dateTime.millisecondsSinceEpoch ~/ 1000,
                   studentID: appState.currentCustomer!.id,
@@ -344,17 +345,42 @@ class OrderLessonPaymentPage extends StatelessWidget {
                   isPending: true,
                   link: '',
                 );
-                bool success = await orderLesson(lesson, appState);
-                if (success) {
+                String? success = await createOrderRequest(lesson, appState);
+                if (success != null) {
                   if (context.mounted) {
-                    Navigator.of(context).pop();
+                    Navigator.of(context)
+                      ..pop()
+                      ..push(MaterialPageRoute(builder: (context) => OrderLessonPaymentPage(lesson: lesson)));
                   }
                 } else {
                   appState.showErrorSnackBar('Error ordering lesson');
                 }
               },
-              child: const Text('Confirm Order'),
+              child: const Text('Confirm and Proceed to Payment'),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class OrderLessonPaymentPage extends StatelessWidget {
+  final Lesson lesson;
+
+  const OrderLessonPaymentPage({super.key, required this.lesson});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Payment'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Payment Page for ${lesson.title}, id: ${lesson.orderID}'),
           ],
         ),
       ),
