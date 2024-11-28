@@ -352,8 +352,6 @@ class OrderLessonConfirmationPage extends StatelessWidget {
                       ..pop()
                       ..push(MaterialPageRoute(builder: (context) => OrderLessonPaymentPage(lesson: lesson)));
                   }
-                } else {
-                  appState.showErrorSnackBar('Error ordering lesson');
                 }
               },
               child: const Text('Confirm and Proceed to Payment'),
@@ -381,6 +379,15 @@ class OrderLessonPaymentPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text('Payment Page for ${lesson.title}, id: ${lesson.orderID}'),
+            ElevatedButton(
+              onPressed: () async {
+                AppState appState = context.read<AppState>();
+                if (await confirmOrder(lesson, appState) && context.mounted) {
+                  Navigator.of(context).pop();
+                }
+              },
+              child: const Text('Confirm Payment'),
+            ),
           ],
         ),
       ),
