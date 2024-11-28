@@ -150,6 +150,10 @@ class AppState extends ChangeNotifier {
   String language = 'en';
   bool isLoading = false;
 
+  // Version for the lessons list to notify the UI when it changes
+  int _lessonsVersion = 0;
+  int get lessonsListVersion => _lessonsVersion;
+
   void showSnackBar(SnackBar snackBar) {
     scaffoldMessengerKey.currentState?.showSnackBar(snackBar);
   }
@@ -293,38 +297,41 @@ class AppState extends ChangeNotifier {
 
   void addLesson(Lesson lesson) {
     if (accountType == AccountType.customer) {
-      currentCustomer!.currentAppointments = List.from(currentCustomer!.currentAppointments)..add(lesson);
+      currentCustomer!.currentAppointments.add(lesson);
     } else {
-      currentTeacher!.currentAppointments = List.from(currentTeacher!.currentAppointments)..add(lesson);
+      currentTeacher!.currentAppointments.add(lesson);
     }
+    _lessonsVersion++;
     notifyListeners();
   }
 
   void updateLessonLink(int startTimestamp, String newLink) {
     if (accountType == AccountType.customer) {
-      currentCustomer!.currentAppointments = List.from(currentCustomer!.currentAppointments.map((lesson) {
+      for (var lesson in currentCustomer!.currentAppointments) {
         if (lesson.startTimestamp == startTimestamp) {
           lesson.link = newLink;
+          break;
         }
-        return lesson;
-      }));
+      }
     } else {
-      currentTeacher!.currentAppointments = List.from(currentTeacher!.currentAppointments.map((lesson) {
+      for (var lesson in currentTeacher!.currentAppointments) {
         if (lesson.startTimestamp == startTimestamp) {
           lesson.link = newLink;
+          break;
         }
-        return lesson;
-      }));
+      }
     }
+    _lessonsVersion++;
     notifyListeners();
   }
 
   void removeLesson(int startTimestamp, {int studentID = 0}) {
     if (accountType == AccountType.customer) {
-      currentCustomer!.currentAppointments = currentCustomer!.currentAppointments.where((lesson) => lesson.startTimestamp != startTimestamp).toList();
+      currentCustomer!.currentAppointments.removeWhere((lesson) => lesson.startTimestamp == startTimestamp);
     } else {
-      currentTeacher!.currentAppointments = currentTeacher!.currentAppointments.where((lesson) => lesson.startTimestamp != startTimestamp || lesson.studentID != studentID).toList();
+      currentTeacher!.currentAppointments.removeWhere((lesson) => lesson.startTimestamp == startTimestamp && lesson.studentID == studentID);
     }
+    _lessonsVersion++;
     notifyListeners();
   }
 

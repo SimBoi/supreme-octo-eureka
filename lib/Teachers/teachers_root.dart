@@ -87,10 +87,18 @@ class TeachersRoot extends StatelessWidget {
               ),
             ),
             const Gap(16),
-            Selector<AppState, List<Lesson>>(
-              selector: (_, appState) => appState.currentTeacher!.currentAppointments,
-              builder: (context, appointments, child) {
-                if (appointments.isEmpty) {
+            Selector<
+                AppState,
+                ({
+                  int version,
+                  List<Lesson> appointments
+                })>(
+              selector: (_, appState) => (
+                version: appState.lessonsListVersion,
+                appointments: appState.currentTeacher!.currentAppointments
+              ),
+              builder: (context, data, _) {
+                if (data.appointments.isEmpty) {
                   return Column(
                     children: [
                       const Gap(16),
@@ -107,7 +115,7 @@ class TeachersRoot extends StatelessWidget {
                   );
                 }
                 return Column(
-                  children: appointments.map((lesson) {
+                  children: data.appointments.map((lesson) {
                     return Column(
                       children: [
                         LessonCard(
