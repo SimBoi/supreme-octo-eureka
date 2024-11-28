@@ -370,25 +370,45 @@ class OrderLessonPaymentPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Payment'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text('Payment Page for ${lesson.title}, id: ${lesson.orderID}'),
-            ElevatedButton(
-              onPressed: () async {
-                AppState appState = context.read<AppState>();
-                if (await confirmOrder(lesson, appState) && context.mounted) {
-                  Navigator.of(context).pop();
-                }
+    AppState appState = context.read<AppState>();
+
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        appState.showAlertDialog(
+          content: const Text("Are you sure you want to leave? Your order will be canceled."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context)
+                  ..pop()
+                  ..pop();
               },
-              child: const Text('Confirm Payment'),
+              child: const Text('Leave'),
             ),
           ],
+        );
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Payment'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text('Payment Page for ${lesson.title}, id: ${lesson.orderID}'),
+              ElevatedButton(
+                onPressed: () async {
+                  if (await confirmOrder(lesson, appState) && context.mounted) {
+                    Navigator.of(context).pop();
+                  }
+                },
+                child: const Text('Confirm Payment'),
+              ),
+            ],
+          ),
         ),
       ),
     );
