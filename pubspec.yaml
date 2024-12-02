@@ -9,12 +9,16 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   flutter_paypal_payment: ^1.0.6
   flutter_timer_countdown: ^1.0.7
   gap: ^3.0.1
   http: ^1.2.1
+  intl: any
   lakos: ^2.0.4
   omni_datetime_picker: ^2.0.5
+  onesignal_flutter: ^5.2.8
   provider: ^6.1.2
   shared_preferences: ^2.2.3
   url_launcher: ^6.3.1

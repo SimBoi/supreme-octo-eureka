@@ -96,7 +96,6 @@ class Customer {
   String username;
   String phone;
   String password;
-  String oneSignalID;
   List<Lesson> currentAppointments;
   List<Order> orders;
 
@@ -105,7 +104,6 @@ class Customer {
     required this.username,
     required this.phone,
     required this.password,
-    required this.oneSignalID,
     required this.currentAppointments,
     required this.orders,
   });
@@ -116,7 +114,6 @@ class Teacher {
   String username;
   String phone;
   String password;
-  String oneSignalID;
   List<Lesson> currentAppointments;
 
   Teacher({
@@ -124,7 +121,6 @@ class Teacher {
     required this.username,
     required this.phone,
     required this.password,
-    required this.oneSignalID,
     required this.currentAppointments,
   });
 
@@ -133,7 +129,6 @@ class Teacher {
     username: '',
     phone: '',
     password: '',
-    oneSignalID: '',
     currentAppointments: [],
   );
 }
@@ -147,6 +142,7 @@ class AppState extends ChangeNotifier {
   AccountType accountType = AccountType.none;
   Customer? currentCustomer;
   Teacher? currentTeacher;
+  String oneSignalID = '';
   String language = 'en';
   bool isLoading = false;
 

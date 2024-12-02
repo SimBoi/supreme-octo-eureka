@@ -140,7 +140,6 @@ class LoginPage extends StatelessWidget {
         username: '',
         phone: phone,
         password: '',
-        oneSignalID: '',
         currentAppointments: [],
         orders: [],
       );
@@ -151,7 +150,6 @@ class LoginPage extends StatelessWidget {
         username: '',
         phone: phone,
         password: '',
-        oneSignalID: '',
         currentAppointments: [],
       );
     } else if (response == 'None') {

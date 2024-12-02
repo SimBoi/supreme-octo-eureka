@@ -1,3 +1,4 @@
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:supreme_octo_eureka/Teachers/teachers_root.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
 import 'package:supreme_octo_eureka/authentication/auth_main.dart';
@@ -17,6 +18,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     AppState appState = AppState();
+
+    // initialize OneSignal
+    OneSignal.Debug.setLogLevel(OSLogLevel.verbose); //Remove this method to stop OneSignal Debugging
+    OneSignal.initialize("e7d7a2bd-815c-4bd9-92dd-9b1f772b20c9");
+    // The promptForPushNotificationsWithUserResponse function will show the iOS or Android push notification prompt. We recommend removing the following code and instead using an In-App Message to prompt for notification permission
+    OneSignal.Notifications.requestPermission(true);
+    OneSignal.User.addObserver(
+      (stateChanges) => appState.oneSignalID = stateChanges.current.onesignalId ?? '',
+    );
+
     appState.navigatorKey = GlobalKey<NavigatorState>();
     appState.scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 

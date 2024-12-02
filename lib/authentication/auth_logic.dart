@@ -81,13 +81,23 @@ Future<bool> login(String phone, String password, AppState appState) async {
     return false;
   }
 
+  // wait until OneSignal ID is not empty with a timeout of 2 seconds
+  int elapsed = 0;
+  while (appState.oneSignalID == '' && elapsed < 2000) {
+    await Future.delayed(const Duration(milliseconds: 100));
+    elapsed += 100;
+  }
+  if (appState.oneSignalID == '') {
+    appState.showErrorSnackBar('Failed to get OneSignal ID');
+  }
+
   var response = await appState.dbRequest(
     body: {
       'Action': 'Login',
       'AccountType': 'None',
       'Phone': phone,
       'Password': password,
-      'OneSignalID': '123' // TODO: get the real OneSignal ID
+      'OneSignalID': appState.oneSignalID,
     },
   );
 
@@ -103,7 +113,6 @@ Future<bool> login(String phone, String password, AppState appState) async {
           username: jsonResponse['Username'],
           phone: phone,
           password: password,
-          oneSignalID: '123', // TODO: get the real OneSignal ID
           currentAppointments: Lesson.fromJsonArray(jsonResponse['CurrentAppointments']),
           orders: Order.fromJsonArray(jsonResponse['Orders']),
         );
@@ -118,7 +127,6 @@ Future<bool> login(String phone, String password, AppState appState) async {
           username: jsonResponse['Username'],
           phone: phone,
           password: password,
-          oneSignalID: '123', // TODO: get the real OneSignal ID
           currentAppointments: Lesson.fromJsonArray(jsonResponse['CurrentAppointments']),
         );
 
@@ -177,7 +185,6 @@ Future<bool> signup(String phone, String username, AppState appState) async {
       'AccountType': 'Customer',
       'Phone': phone,
       'Username': username,
-      'OneSignalID': '123', // TODO: get the real OneSignal ID
     },
   );
 
@@ -192,7 +199,6 @@ Future<bool> signup(String phone, String username, AppState appState) async {
           username: username,
           phone: phone,
           password: "",
-          oneSignalID: '',
           currentAppointments: List.empty(),
           orders: List.empty(),
         );
