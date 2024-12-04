@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginPage extends StatelessWidget {
   LoginPage({super.key, required this.pageController});
@@ -32,7 +33,7 @@ class LoginPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Login',
+                  AppLocalizations.of(context)!.login,
                   style: theme.textTheme.headlineMedium!.copyWith(
                     color: theme.colorScheme.primary,
                     fontWeight: FontWeight.w500,
@@ -56,11 +57,11 @@ class LoginPage extends StatelessWidget {
                         _phoneController.selection = TextSelection.fromPosition(TextPosition(offset: _phoneController.text.length));
                       }
                     },
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(10)),
                       ),
-                      labelText: 'Phone',
+                      labelText: AppLocalizations.of(context)!.phone,
                       counterText: '',
                     ),
                   ),
@@ -79,7 +80,7 @@ class LoginPage extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'Login',
+                      AppLocalizations.of(context)!.login,
                       style: theme.textTheme.titleMedium?.copyWith(
                         color: theme.colorScheme.onSecondaryContainer,
                         fontWeight: FontWeight.w500,
@@ -91,7 +92,7 @@ class LoginPage extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      'Don’t have an account?',
+                      AppLocalizations.of(context)!.dontHaveAnAccount,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.outline,
                         fontWeight: FontWeight.w500,
@@ -103,7 +104,7 @@ class LoginPage extends StatelessWidget {
                         pageController.animateToPage(0, duration: const Duration(milliseconds: 500), curve: Curves.ease);
                       },
                       child: Text(
-                        'Sign Up',
+                        AppLocalizations.of(context)!.signUp,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.primary,
                           fontWeight: FontWeight.w500,
@@ -125,10 +126,10 @@ class LoginPage extends StatelessWidget {
 
     // check if phone is valid
     if (phone == '') {
-      appState.showErrorSnackBar('Phone is required!');
+      appState.showErrorSnackBar(AppLocalizations.of(context)!.phoneRequired);
       return;
     } else if (phone.length != 10) {
-      appState.showErrorSnackBar('Phone number must be 10 digits!');
+      appState.showErrorSnackBar(AppLocalizations.of(context)!.phoneLengthNot10);
       return;
     }
 
@@ -154,7 +155,7 @@ class LoginPage extends StatelessWidget {
       );
     } else if (response == 'None') {
       appState.accountType = AccountType.none;
-      appState.showErrorSnackBar('Phone number is not associated with any account!');
+      appState.showErrorSnackBar(AppLocalizations.of(context)!.phoneDoesntExist);
       return;
     } else {
       return;

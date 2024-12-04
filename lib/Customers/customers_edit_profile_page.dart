@@ -4,6 +4,7 @@ import 'package:supreme_octo_eureka/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supreme_octo_eureka/authentication/auth_logic.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class EditCustomerProfilePage extends StatelessWidget {
   EditCustomerProfilePage({super.key});
@@ -31,7 +32,7 @@ class EditCustomerProfilePage extends StatelessWidget {
         var jsonResponse = json.decode(response.body);
         if (jsonResponse['Result'] == 'SUCCESS') {
           appState.updateProfile(newName.value);
-          appState.showMsgSnackBar('Profile updated successfully');
+          appState.showMsgSnackBar(AppLocalizations.of(appState.rootContext!)!.profileUpdated);
           return true;
         } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
           // TODO: logout
@@ -39,12 +40,12 @@ class EditCustomerProfilePage extends StatelessWidget {
         }
         throw jsonResponse['Result'];
       } on FormatException {
-        appState.showErrorSnackBar('Json Format Error');
+        appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.jsonFormatError);
       } catch (e) {
         appState.showErrorSnackBar(e.toString());
       }
     } else {
-      appState.showErrorSnackBar('Error ${response.statusCode}');
+      appState.showErrorSnackBar('${response.statusCode}: ${AppLocalizations.of(appState.rootContext!)!.unexpectedError}');
     }
 
     return false;
@@ -56,7 +57,7 @@ class EditCustomerProfilePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Profile'),
+        title: Text(AppLocalizations.of(context)!.editProfile),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -65,9 +66,9 @@ class EditCustomerProfilePage extends StatelessWidget {
             const Gap(16),
             TextFormField(
               initialValue: appState.currentCustomer!.username,
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.username,
+                border: const OutlineInputBorder(),
               ),
               onChanged: (value) {
                 newName.value = value;
@@ -82,13 +83,13 @@ class EditCustomerProfilePage extends StatelessWidget {
                     ? ElevatedButton(
                         onPressed: () {
                           appState.showAlertDialog(
-                            content: const Text('Are you sure you want to save changes?'),
+                            content: Text(AppLocalizations.of(context)!.confirmSaveChanges),
                             actions: [
                               TextButton(
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 },
-                                child: const Text('Cancel'),
+                                child: Text(AppLocalizations.of(context)!.cancel),
                               ),
                               TextButton(
                                 onPressed: () async {
@@ -97,12 +98,12 @@ class EditCustomerProfilePage extends StatelessWidget {
                                     Navigator.of(context).pop();
                                   }
                                 },
-                                child: const Text('Save Changes'),
+                                child: Text(AppLocalizations.of(context)!.saveChanges),
                               ),
                             ],
                           );
                         },
-                        child: const Text('Save Changes'),
+                        child: Text(AppLocalizations.of(context)!.saveChanges),
                       )
                     : const Gap(0);
               },
@@ -114,13 +115,13 @@ class EditCustomerProfilePage extends StatelessWidget {
               ),
               onPressed: () {
                 appState.showAlertDialog(
-                  content: const Text('Are you sure you want to logout?'),
+                  content: Text(AppLocalizations.of(context)!.confirmLogout),
                   actions: [
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
-                      child: const Text('Cancel'),
+                      child: Text(AppLocalizations.of(context)!.cancel),
                     ),
                     TextButton(
                       onPressed: () {
@@ -128,13 +129,13 @@ class EditCustomerProfilePage extends StatelessWidget {
                         Navigator.of(context).popUntil((route) => false);
                         Navigator.of(context).pushNamed('/');
                       },
-                      child: const Text('Logout'),
+                      child: Text(AppLocalizations.of(context)!.logout),
                     ),
                   ],
                 );
               },
               child: Text(
-                'Logout',
+                AppLocalizations.of(context)!.logout,
                 style: TextStyle(color: appState.themeData.colorScheme.onErrorContainer),
               ),
             ),

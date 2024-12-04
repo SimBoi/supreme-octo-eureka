@@ -4,22 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:supreme_octo_eureka/booking_logic.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-// lesson card widget
-// A card that contains vertically stacked components, if the user is a customer, the card contains:
-// - a title for the lesson
-// - a person icon followed by the name of the teacher (no teacher name if the lesson is pending) followed by a phone icon followed by the phone number of the teacher
-// - a schedule icon followed by the start date and time of the lesson followed by a clock icon followed by the duration of the lesson
-// - a location icon followed by the link for the virtual lesson ("Lesson Pending" if the lesson is pending)
-// - a button to cancel the lesson in the bottom right corner of the card
-// If the user is a teacher, the card contains:
-// - a title for the lesson
-// - a person icon followed by the name of the student followed by a phone icon followed by the phone number of the student
-// - a schedule icon followed by the start date and time of the lesson followed by a clock icon followed by the duration of the lesson
-// - a location icon followed by the link for the virtual lesson
-// - a button to accept/reject the lesson in the bottom right corner of the card
-// - a button to edit the link for the virtual lesson in the bottom left corner of the card
-// The card is clickable and navigates to the link for the virtual lesson
 class LessonCard extends StatelessWidget {
   final Lesson lesson;
   final bool isCustomer;
@@ -72,7 +58,7 @@ class LessonCard extends StatelessWidget {
                     const Gap(8),
                     const Icon(Icons.access_time),
                     const Gap(8),
-                    if (lesson.durationMinutes >= 60) Text('${(lesson.durationMinutes / 60).toStringAsFixed((lesson.durationMinutes % 60 == 0) ? 0 : 1)} hours') else Text('$lesson.durationMinutes minutes'),
+                    if (lesson.durationMinutes >= 60) Text(AppLocalizations.of(context)!.hours((lesson.durationMinutes / 60).toStringAsFixed((lesson.durationMinutes % 60 == 0) ? 0 : 1))) else Text(AppLocalizations.of(context)!.minutes(lesson.durationMinutes.toString())),
                   ],
                 ),
               ),
@@ -80,7 +66,7 @@ class LessonCard extends StatelessWidget {
                 ListTile(
                   title: Center(
                     child: Text(
-                      'Lesson pending...\n A teacher will be assigned soon',
+                      AppLocalizations.of(context)!.lessonPending,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Theme.of(context).disabledColor,
@@ -100,14 +86,14 @@ class LessonCard extends StatelessWidget {
                         child: IconButton(
                           onPressed: () {
                             appState.showAlertDialog(
-                              content: const Text('Are you sure you want to cancel this lesson?'),
+                              content: Text(AppLocalizations.of(context)!.confirmCancelLesson),
                               actions: [
                                 TextButton(
                                   onPressed: () {
                                     cancelLesson(lesson, appState);
                                     Navigator.of(appState.navigatorKey.currentContext!).pop();
                                   },
-                                  child: const Text('Cancel Lesson'),
+                                  child: Text(AppLocalizations.of(context)!.cancelLesson),
                                 ),
                               ],
                             );
@@ -122,17 +108,17 @@ class LessonCard extends StatelessWidget {
                             IconButton(
                               onPressed: () {
                                 appState.showInputDialog(
-                                  message: 'Enter the link for the virtual lesson:',
+                                  message: AppLocalizations.of(context)!.enterLink,
                                   onSubmit: (link) {
                                     appState.showAlertDialog(
-                                      content: const Text('Are you sure you want to edit this lesson?'),
+                                      content: Text(AppLocalizations.of(context)!.confirmEditLesson),
                                       actions: [
                                         TextButton(
                                           onPressed: () {
                                             editLessonLink(lesson, link, appState);
                                             Navigator.of(appState.navigatorKey.currentContext!).pop();
                                           },
-                                          child: const Text('Edit Link'),
+                                          child: Text(AppLocalizations.of(context)!.editLink),
                                         ),
                                       ],
                                     );
@@ -147,17 +133,17 @@ class LessonCard extends StatelessWidget {
                             onPressed: () {
                               if (lesson.isPending) {
                                 appState.showInputDialog(
-                                  message: 'Enter the link for the virtual lesson:',
+                                  message: AppLocalizations.of(context)!.enterLink,
                                   onSubmit: (link) {
                                     appState.showAlertDialog(
-                                      content: const Text('Are you sure you want to accept this lesson?'),
+                                      content: Text(AppLocalizations.of(context)!.confirmAcceptLesson),
                                       actions: [
                                         TextButton(
                                           onPressed: () {
                                             acceptLesson(lesson, link, appState);
                                             Navigator.of(appState.navigatorKey.currentContext!).pop();
                                           },
-                                          child: const Text('Accept Lesson'),
+                                          child: Text(AppLocalizations.of(context)!.acceptLesson),
                                         ),
                                       ],
                                     );
@@ -165,14 +151,14 @@ class LessonCard extends StatelessWidget {
                                 );
                               } else {
                                 appState.showAlertDialog(
-                                  content: const Text('Are you sure you want to reject this lesson?'),
+                                  content: Text(AppLocalizations.of(context)!.confirmRejectLesson),
                                   actions: [
                                     TextButton(
                                       onPressed: () {
                                         rejectLesson(lesson, appState);
                                         Navigator.of(appState.navigatorKey.currentContext!).pop();
                                       },
-                                      child: const Text('Reject Lesson'),
+                                      child: Text(AppLocalizations.of(context)!.rejectLesson),
                                     ),
                                   ],
                                 );

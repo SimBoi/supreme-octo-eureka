@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum AccountType {
   none,
@@ -146,6 +147,9 @@ class AppState extends ChangeNotifier {
   String language = 'en';
   bool isLoading = false;
 
+  // get the root scaffold context
+  BuildContext? get rootContext => scaffoldMessengerKey.currentContext!;
+
   // Version for the lessons list to notify the UI when it changes
   int _lessonsVersion = 0;
   int get lessonsListVersion => _lessonsVersion;
@@ -261,14 +265,14 @@ class AppState extends ChangeNotifier {
         body: body,
       );
       if (response.statusCode != 200) {
-        showErrorSnackBar('${response.statusCode}: Unexpected Error');
+        showErrorSnackBar('${response.statusCode}: ${AppLocalizations.of(rootContext!)!.unexpectedError}');
       }
     } on http.ClientException catch (e) {
       response = http.Response(e.message, 504);
-      showErrorSnackBar('http.ClientException: ${e.message}');
+      showErrorSnackBar('${AppLocalizations.of(rootContext!)!.clientException}: ${e.message}');
     } catch (e) {
       response = http.Response(e.toString(), 400);
-      showErrorSnackBar('dbRequestUnexpectedException: ${e.toString()}');
+      showErrorSnackBar('${AppLocalizations.of(rootContext!)!.unexpectedException}: ${e.toString()}');
     }
 
     if (indicateLoading) {

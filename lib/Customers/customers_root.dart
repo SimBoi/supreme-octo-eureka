@@ -5,6 +5,7 @@ import 'package:supreme_octo_eureka/Customers/customers_order_lesson_page.dart';
 import 'package:flutter/material.dart';
 import 'package:supreme_octo_eureka/Widgets/lesson_card.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CustomersRoot extends StatelessWidget {
   const CustomersRoot({super.key});
@@ -24,7 +25,7 @@ class CustomersRoot extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'My Lessons',
+                  AppLocalizations.of(context)!.myLessons,
                   style: Theme.of(context).textTheme.displaySmall,
                 ),
                 FilledButton.tonal(
@@ -55,7 +56,7 @@ class CustomersRoot extends StatelessWidget {
                     const Gap(8),
                     Expanded(
                       child: Text(
-                        'You can view and manage your ordered lessons on this page. Tap the button at the bottom right to order a new lesson.',
+                        AppLocalizations.of(context)!.myLessonsDescription,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: appState.themeData.colorScheme.onTertiaryContainer,
                             ),
@@ -84,7 +85,7 @@ class CustomersRoot extends StatelessWidget {
                       const Gap(16),
                       Center(
                         child: Text(
-                          'No lessons booked.',
+                          AppLocalizations.of(context)!.noLessons,
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                 color: Theme.of(context).disabledColor,
@@ -120,7 +121,7 @@ class CustomersRoot extends StatelessWidget {
           );
         },
         icon: const Icon(Icons.add),
-        label: const Text('Order Lesson'),
+        label: Text(AppLocalizations.of(context)!.orderLesson),
       ),
     );
   }

@@ -4,14 +4,7 @@ import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
 import 'package:supreme_octo_eureka/booking_logic.dart';
-
-// order lesson page
-// A series of horizontal pages that allow the customer to order a lesson
-// in the first page, the customer can select the title of the lesson, once the title is selected the page will move to the next page automatically
-// in the second page, the customer can select the date, once the date is selected the page will move to the next page automatically
-// in the third page, the customer can select the time, once the time is selected the page will move to the next page automatically
-// in the fourth page, the customer can select the duration, once the duration is selected the page will move to the next page automatically
-// in the fifth page, the customer can review the lesson details and confirm the order, once the order is confirmed the navigation will return to the customer root page
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class OrderLessonPage extends StatefulWidget {
   const OrderLessonPage({super.key});
@@ -84,7 +77,7 @@ class _OrderLessonPageState extends State<OrderLessonPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Order Lesson'),
+        title: Text(AppLocalizations.of(context)!.orderLesson),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: _previousPage,
@@ -147,9 +140,9 @@ class OrderLessonTitlePage extends StatelessWidget {
             TextField(
               controller: controller,
               maxLines: null,
-              decoration: const InputDecoration(
-                labelText: 'Title',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.title,
+                border: const OutlineInputBorder(),
               ),
             ),
             const Gap(16.0),
@@ -161,7 +154,7 @@ class OrderLessonTitlePage extends StatelessWidget {
                   if (controller.text.isNotEmpty) {
                     nextPage();
                   } else {
-                    appState.showErrorSnackBar('Title cannot be empty');
+                    appState.showErrorSnackBar(AppLocalizations.of(context)!.titleCannotBeEmpty);
                   }
                 },
                 child: const Icon(Icons.arrow_forward),
@@ -213,7 +206,8 @@ class OrderLessonDateTimePage extends StatelessWidget {
                   if (selectedDateTime.isAfter(DateTime.now().add(const Duration(minutes: 30)))) {
                     nextPage();
                   } else {
-                    appState.showErrorSnackBar('Date and time must be more than 30 minutes in the future');
+                    // appState.showErrorSnackBar('Date and time must be more than {30} minutes in the future');
+                    appState.showErrorSnackBar(AppLocalizations.of(context)!.dateTimeMustBeInTheFuture(30));
                   }
                 },
                 child: const Icon(Icons.arrow_forward),
@@ -246,16 +240,16 @@ class OrderLessonDurationPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text('Select Duration'),
+            Text(AppLocalizations.of(context)!.selectDuration),
             const SizedBox(height: 16),
             DropdownButton<int>(
               value: initialDuration,
-              items: const [
-                DropdownMenuItem(value: 30, child: Text('30 minutes')),
-                DropdownMenuItem(value: 60, child: Text('1 hour')),
-                DropdownMenuItem(value: 90, child: Text('1.5 hours')),
-                DropdownMenuItem(value: 120, child: Text('2 hours')),
-                DropdownMenuItem(value: 180, child: Text('3 hours')),
+              items: [
+                DropdownMenuItem(value: 30, child: Text(AppLocalizations.of(context)!.minutes(30))),
+                DropdownMenuItem(value: 60, child: Text(AppLocalizations.of(context)!.hours(1))),
+                DropdownMenuItem(value: 90, child: Text(AppLocalizations.of(context)!.hours(1.5))),
+                DropdownMenuItem(value: 120, child: Text(AppLocalizations.of(context)!.hours(2))),
+                DropdownMenuItem(value: 180, child: Text(AppLocalizations.of(context)!.hours(3))),
               ],
               onChanged: (int? newValue) {
                 if (newValue != null) {
@@ -319,7 +313,7 @@ class OrderLessonConfirmationPage extends StatelessWidget {
                         children: [
                           const Icon(Icons.access_time),
                           const Gap(8),
-                          if (duration >= 60) Text('${(duration / 60).toStringAsFixed((duration % 60 == 0) ? 0 : 1)} hours') else Text('$duration minutes'),
+                          if (duration >= 60) Text('${(duration / 60).toStringAsFixed((duration % 60 == 0) ? 0 : 1)} hours') else Text(AppLocalizations.of(context)!.minutes(duration)),
                         ],
                       ),
                     ],
@@ -354,7 +348,7 @@ class OrderLessonConfirmationPage extends StatelessWidget {
                   }
                 }
               },
-              child: const Text('Confirm and Proceed to Payment'),
+              child: Text(AppLocalizations.of(context)!.confirmAndPay),
             ),
           ],
         ),
@@ -377,7 +371,7 @@ class OrderLessonPaymentPage extends StatelessWidget {
       onPopInvoked: (didPop) {
         if (didPop) return;
         appState.showAlertDialog(
-          content: const Text("Are you sure you want to leave? Your order will be canceled."),
+          content: Text(AppLocalizations.of(context)!.confirmLeavePaymentPage),
           actions: [
             TextButton(
               onPressed: () {
@@ -385,7 +379,7 @@ class OrderLessonPaymentPage extends StatelessWidget {
                   ..pop()
                   ..pop();
               },
-              child: const Text('Leave'),
+              child: Text(AppLocalizations.of(context)!.leave),
             ),
           ],
         );

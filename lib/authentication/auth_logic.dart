@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:supreme_octo_eureka/app_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 Future<bool> loadSavedCredentials(AppState appState) async {
   final prefs = await SharedPreferences.getInstance();
@@ -26,7 +27,7 @@ Future<void> saveCredentials(String newPhone, String newPassword) async {
 
 Future<String> getAccountType(String phone, AppState appState) async {
   if (phone == '') {
-    appState.showErrorSnackBar('Phone number is required!');
+    appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.phoneRequired);
     return 'ERROR';
   }
 
@@ -34,7 +35,7 @@ Future<String> getAccountType(String phone, AppState appState) async {
   if (phone.length == 10 && phone.startsWith('05')) {
     phone = '972${phone.substring(1)}';
   } else if (phone.length != 12 || !phone.startsWith('9725')) {
-    appState.showErrorSnackBar('Invalid phone number!');
+    appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.invalidPhone);
     return 'ERROR';
   }
 
@@ -57,7 +58,7 @@ Future<String> getAccountType(String phone, AppState appState) async {
       }
       throw jsonResponse['Result'];
     } on FormatException {
-      appState.showErrorSnackBar('Json Format Error');
+      appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.jsonFormatError);
     } catch (e) {
       appState.showErrorSnackBar(e.toString());
     }
@@ -69,7 +70,7 @@ Future<String> getAccountType(String phone, AppState appState) async {
 Future<bool> login(String phone, String password, AppState appState) async {
   // check if phone or password are empty
   if (phone == '' || password == '') {
-    appState.showErrorSnackBar('Phone and password are required!');
+    appState.showErrorSnackBar('Phone number and password are required!');
     return false;
   }
 
@@ -77,7 +78,7 @@ Future<bool> login(String phone, String password, AppState appState) async {
   if (phone.length == 10 && phone.startsWith('05')) {
     phone = '972${phone.substring(1)}';
   } else if (phone.length != 12 || !phone.startsWith('9725')) {
-    appState.showErrorSnackBar('Invalid phone number!');
+    appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.invalidPhone);
     return false;
   }
 
@@ -88,7 +89,7 @@ Future<bool> login(String phone, String password, AppState appState) async {
     elapsed += 100;
   }
   if (appState.oneSignalID == '') {
-    appState.showErrorSnackBar('Failed to get OneSignal ID');
+    appState.showErrorSnackBar('OneSignal ID is empty!');
   }
 
   var response = await appState.dbRequest(
@@ -132,7 +133,7 @@ Future<bool> login(String phone, String password, AppState appState) async {
 
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
-        appState.showErrorSnackBar('Wrong phone number!');
+        appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.phoneDoesntExist);
         return false;
       } else if (jsonResponse['Result'] == 'WRONG_PASSWORD') {
         appState.showErrorSnackBar('Wrong passowrd!');
@@ -140,7 +141,7 @@ Future<bool> login(String phone, String password, AppState appState) async {
       }
       throw jsonResponse['Result'];
     } on FormatException {
-      appState.showErrorSnackBar('Json Format Error');
+      appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.jsonFormatError);
       // log the output of response.body
       log(response.body);
       return false;
@@ -162,7 +163,7 @@ Future<void> logout(AppState appState) async {
 
 Future<bool> signup(String phone, String username, AppState appState) async {
   if (phone == '') {
-    appState.showErrorSnackBar('Phone number is required!');
+    appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.phoneRequired);
     return false;
   }
 
@@ -170,12 +171,12 @@ Future<bool> signup(String phone, String username, AppState appState) async {
   if (phone.length == 10 && phone.startsWith('05')) {
     phone = '972${phone.substring(1)}';
   } else if (phone.length != 12 || !phone.startsWith('9725')) {
-    appState.showErrorSnackBar('Invalid phone number!');
+    appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.invalidPhone);
     return false;
   }
 
   if (username.length < 3) {
-    appState.showErrorSnackBar('Username must be at least 3 characters long!');
+    appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.usernameLengthLessThan3);
     return false;
   }
 
@@ -204,18 +205,18 @@ Future<bool> signup(String phone, String username, AppState appState) async {
         );
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_EXISTS') {
-        appState.showErrorSnackBar('Phone number already in use!');
+        appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.phoneExists);
         return false;
       } else if (jsonResponse['Result'] == 'ERROR') {
-        appState.showErrorSnackBar('Error creating new user in the database!');
+        appState.showErrorSnackBar('Error signing up!');
         return false;
       }
       throw 'error';
     } on FormatException {
-      appState.showErrorSnackBar('Json Format Error');
+      appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.jsonFormatError);
       return false;
     } catch (e) {
-      appState.showErrorSnackBar('Unexpected Error');
+      appState.showErrorSnackBar(e.toString());
       return false;
     }
   }
@@ -241,19 +242,19 @@ Future<
     try {
       var jsonResponse = json.decode(response.body);
       if (jsonResponse['Result'] == 'SUCCESS') {
-        appState.showMsgSnackBar('Verification code sent successfully! The code is valid for ${(jsonResponse['ExpiresIn'] / 60).toInt()} minutes.');
+        appState.showMsgSnackBar(AppLocalizations.of(appState.rootContext!)!.verificationCodeSent((jsonResponse['ExpiresIn'] / 60).toInt().toString()));
         return (
           true,
           jsonResponse['Cooldown'] as int
         );
       } else if (jsonResponse['Result'] == 'COOLDOWN') {
-        appState.showErrorSnackBar('Verification code already sent! Please wait for the cooldown to end before trying again.');
+        appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.verificationCodeAlreadySent);
         return (
           true,
           jsonResponse['Cooldown'] as int,
         );
       } else if (jsonResponse['Result'] == 'ERROR') {
-        appState.showErrorSnackBar('Error requesting verification code!');
+        appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.errorRequestingVerificationCode);
         return (
           false,
           -1
@@ -261,13 +262,13 @@ Future<
       }
       throw 'error';
     } on FormatException {
-      appState.showErrorSnackBar('Json Format Error');
+      appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.jsonFormatError);
       return (
         false,
         -1
       );
     } catch (e) {
-      appState.showErrorSnackBar('Unexpected Error');
+      appState.showErrorSnackBar(e.toString());
       return (
         false,
         -1
@@ -301,15 +302,15 @@ Future<bool> verifyPhone(String phone, String verificationCode, AppState appStat
           appState.currentTeacher!.password = jsonResponse['GeneratedPassword'];
         }
 
-        appState.showMsgSnackBar('Phone number verified successfully!');
+        appState.showMsgSnackBar(AppLocalizations.of(appState.rootContext!)!.phoneVerified);
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_ALREADY_VERIFIED') {
         return true;
       } else if (jsonResponse['Result'] == 'CODE_EXPIRED') {
-        appState.showErrorSnackBar('Verification code expired! Please request a new one.');
+        appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.verificationCodeExpired);
         return false;
       } else if (jsonResponse['Result'] == 'WRONG_CODE') {
-        appState.showErrorSnackBar('Wrong verification code!');
+        appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.wrongVerificationCode);
         return false;
       } else if (jsonResponse['Result'] == 'ERROR') {
         appState.showErrorSnackBar('Error verifying phone number!');
@@ -317,10 +318,10 @@ Future<bool> verifyPhone(String phone, String verificationCode, AppState appStat
       }
       throw 'error';
     } on FormatException {
-      appState.showErrorSnackBar('Json Format Error');
+      appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.jsonFormatError);
       return false;
     } catch (e) {
-      appState.showErrorSnackBar('Unexpected Error');
+      appState.showErrorSnackBar(e.toString());
       return false;
     }
   }

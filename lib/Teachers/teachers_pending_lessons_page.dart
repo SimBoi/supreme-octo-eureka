@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
 import 'package:supreme_octo_eureka/Widgets/lesson_card.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PendingLessonsPage extends StatelessWidget {
   const PendingLessonsPage({super.key});
@@ -30,12 +31,12 @@ class PendingLessonsPage extends StatelessWidget {
         }
         throw jsonResponse['Result'];
       } on FormatException {
-        appState.showErrorSnackBar('Json Format Error');
+        appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.jsonFormatError);
       } catch (e) {
         appState.showErrorSnackBar(e.toString());
       }
     } else {
-      appState.showErrorSnackBar('Error ${response.statusCode}');
+      appState.showErrorSnackBar('${response.statusCode}: ${AppLocalizations.of(appState.rootContext!)!.unexpectedError}');
     }
 
     return List.empty();
@@ -47,7 +48,7 @@ class PendingLessonsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lesson Requests'),
+        title: Text(AppLocalizations.of(context)!.lessonRequests),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -75,7 +76,7 @@ class PendingLessonsPage extends StatelessWidget {
                   }).toList(),
                 );
               } else {
-                return const Center(child: Text('No pending lessons'));
+                return Center(child: Text(AppLocalizations.of(context)!.noPendingLessons));
               }
             },
           ),

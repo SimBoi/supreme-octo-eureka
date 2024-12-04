@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SingUpPage extends StatelessWidget {
   SingUpPage({super.key, required this.pageController});
@@ -32,7 +33,7 @@ class SingUpPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Sign Up',
+                  AppLocalizations.of(context)!.signUp,
                   style: theme.textTheme.headlineMedium!.copyWith(
                     color: theme.colorScheme.primary,
                     fontWeight: FontWeight.w500,
@@ -56,11 +57,11 @@ class SingUpPage extends StatelessWidget {
                         _phoneController.selection = TextSelection.fromPosition(TextPosition(offset: _phoneController.text.length));
                       }
                     },
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(10)),
                       ),
-                      labelText: 'Phone',
+                      labelText: AppLocalizations.of(context)!.phone,
                       counterText: '',
                     ),
                   ),
@@ -82,11 +83,11 @@ class SingUpPage extends StatelessWidget {
                         _usernameController.selection = TextSelection.fromPosition(TextPosition(offset: _usernameController.text.length));
                       }
                     },
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(10)),
                       ),
-                      labelText: 'Name',
+                      labelText: AppLocalizations.of(context)!.username,
                     ),
                   ),
                 ),
@@ -104,7 +105,7 @@ class SingUpPage extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'Create account',
+                      AppLocalizations.of(context)!.signUp,
                       style: theme.textTheme.titleMedium?.copyWith(
                         color: theme.colorScheme.onSecondaryContainer,
                         fontWeight: FontWeight.w500,
@@ -116,7 +117,7 @@ class SingUpPage extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      'have an account?',
+                      AppLocalizations.of(context)!.alreadyHaveAnAccount,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.outline,
                         fontWeight: FontWeight.w500,
@@ -128,7 +129,7 @@ class SingUpPage extends StatelessWidget {
                         pageController.animateToPage(1, duration: const Duration(milliseconds: 500), curve: Curves.ease);
                       },
                       child: Text(
-                        'Log In ',
+                        AppLocalizations.of(context)!.login,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.primary,
                           fontWeight: FontWeight.w500,
@@ -151,7 +152,7 @@ class SingUpPage extends StatelessWidget {
 
     bool result = await signup(phone, username, appState);
     if (result && context.mounted) {
-      appState.showMsgSnackBar('Account created successfully!');
+      appState.showMsgSnackBar(AppLocalizations.of(context)!.accountCreated);
 
       if (!(await Navigator.of(context).pushNamed('/auth/verify_phone') as bool)) {
         return;

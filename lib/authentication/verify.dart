@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
 import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class VerifyPhonePage extends StatelessWidget {
   VerifyPhonePage({super.key});
@@ -37,7 +38,7 @@ class VerifyPhonePage extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Text(
-                      'Verify Phone Number',
+                      AppLocalizations.of(context)!.verifyPhone,
                       style: theme.textTheme.headlineMedium!.copyWith(
                         color: theme.colorScheme.primary,
                         fontWeight: FontWeight.w500,
@@ -53,7 +54,7 @@ class VerifyPhonePage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text(
-                                'We need to verify your phone number before you can continue.\n\nWe will send you a verification code using whatsapp to the following number:',
+                                AppLocalizations.of(context)!.verifyPhoneDescription,
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.colorScheme.onSurface,
                                 ),
@@ -71,7 +72,7 @@ class VerifyPhonePage extends StatelessWidget {
                                 width: double.infinity,
                                 child: ElevatedButton(
                                   onPressed: () => _onRequestCodeButtonPressed(appState),
-                                  child: const Text('Send Verification Code'),
+                                  child: Text(AppLocalizations.of(context)!.requestCode),
                                 ),
                               ),
                             ],
@@ -94,11 +95,11 @@ class VerifyPhonePage extends StatelessWidget {
                                       _onConfirmCodeButtonPressed(context, appState);
                                     }
                                   },
-                                  decoration: const InputDecoration(
-                                    border: OutlineInputBorder(
+                                  decoration: InputDecoration(
+                                    border: const OutlineInputBorder(
                                       borderRadius: BorderRadius.all(Radius.circular(10)),
                                     ),
-                                    labelText: 'Verification Code',
+                                    labelText: AppLocalizations.of(context)!.verificationCode,
                                     counterText: '',
                                   ),
                                 ),
@@ -117,7 +118,7 @@ class VerifyPhonePage extends StatelessWidget {
                                     ),
                                   ),
                                   child: Text(
-                                    'Confirm',
+                                    AppLocalizations.of(context)!.confirm,
                                     style: theme.textTheme.titleMedium?.copyWith(
                                       color: theme.colorScheme.onSecondaryContainer,
                                       fontWeight: FontWeight.w500,
@@ -130,18 +131,18 @@ class VerifyPhonePage extends StatelessWidget {
                                 key: resendTimerKey,
                                 resendCode: () => _onRequestCodeButtonPressed(appState),
                               ),
-                              const Gap(40),
-                              SizedBox(
-                                width: double.infinity,
-                                child: Text(
-                                  'A ${AppState.verificationCodeLength}-digit verification code has been sent to ${appState.getPhoneLocalFormat()}',
-                                  textAlign: TextAlign.center,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.outline,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
+                              // const Gap(40),
+                              // SizedBox(
+                              //   width: double.infinity,
+                              //   child: Text(
+                              //     'A ${AppState.verificationCodeLength}-digit verification code has been sent to ${appState.getPhoneLocalFormat()}',
+                              //     textAlign: TextAlign.center,
+                              //     style: theme.textTheme.bodySmall?.copyWith(
+                              //       color: theme.colorScheme.outline,
+                              //       fontWeight: FontWeight.w500,
+                              //     ),
+                              //   ),
+                              // ),
                             ],
                           ),
                         ],
@@ -175,7 +176,8 @@ class VerifyPhonePage extends StatelessWidget {
 
   void _onConfirmCodeButtonPressed(BuildContext context, AppState appState) async {
     if (_codeController.text.length != AppState.verificationCodeLength) {
-      appState.showErrorSnackBar('Verification code must be ${AppState.verificationCodeLength} digits long!');
+      // appState.showErrorSnackBar('Verification code must be ${AppState.verificationCodeLength} digits long!');
+      appState.showErrorSnackBar(AppLocalizations.of(context)!.verificationCodeLengthError(AppState.verificationCodeLength));
       return;
     }
     bool result = await verifyPhone(appState.getPhoneInternationalFormat(), _codeController.text, appState);
@@ -218,7 +220,7 @@ class ResendTimerState extends State<ResendTimer> {
     if (isTimerRunning) {
       children = [
         Text(
-          'Resend  ',
+          AppLocalizations.of(context)!.resendCodeIn,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.primary,
@@ -254,7 +256,7 @@ class ResendTimerState extends State<ResendTimer> {
             widget.resendCode();
           },
           child: Text(
-            'Resend Code',
+            AppLocalizations.of(context)!.resendCode,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.primary,
               fontWeight: FontWeight.w500,

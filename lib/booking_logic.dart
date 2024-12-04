@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:supreme_octo_eureka/app_state.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 Future<String?> createOrderRequest(
   Lesson lesson,
@@ -30,14 +31,14 @@ Future<String?> createOrderRequest(
       }
       throw jsonResponse['Result'];
     } on FormatException {
-      appState.showErrorSnackBar('Json Format Error');
+      appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.jsonFormatError);
       return null;
     } catch (e) {
       appState.showErrorSnackBar(e.toString());
       return null;
     }
   } else {
-    appState.showErrorSnackBar('Error ${response.statusCode}');
+    appState.showErrorSnackBar('${response.statusCode}: ${AppLocalizations.of(appState.rootContext!)!.unexpectedError}');
   }
 
   return null;
@@ -62,7 +63,7 @@ Future<bool> confirmOrder(
       var jsonResponse = json.decode(response.body);
       if (jsonResponse['Result'] == 'SUCCESS') {
         appState.addLesson(lesson);
-        appState.showMsgSnackBar('Lesson Ordered');
+        appState.showMsgSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonBooked);
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST' || jsonResponse['Result'] == 'WRONG_PASSWORD') {
         // TODO: logout
@@ -70,14 +71,14 @@ Future<bool> confirmOrder(
       }
       throw jsonResponse['Result'];
     } on FormatException {
-      appState.showErrorSnackBar('Json Format Error');
+      appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.jsonFormatError);
       return false;
     } catch (e) {
       appState.showErrorSnackBar(e.toString());
       return false;
     }
   } else {
-    appState.showErrorSnackBar('Error ${response.statusCode}');
+    appState.showErrorSnackBar('${response.statusCode}: ${AppLocalizations.of(appState.rootContext!)!.unexpectedError}');
   }
 
   return false;
@@ -102,7 +103,7 @@ Future<bool> cancelLesson(
       var jsonResponse = json.decode(response.body);
       if (jsonResponse['Result'] == 'SUCCESS') {
         appState.removeLesson(lesson.startTimestamp);
-        appState.showMsgSnackBar('Lesson Canceled');
+        appState.showMsgSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonCancelled);
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
         // TODO: logout
@@ -110,7 +111,7 @@ Future<bool> cancelLesson(
       }
       throw jsonResponse['Result'];
     } on FormatException {
-      appState.showErrorSnackBar('Json Format Error');
+      appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.jsonFormatError);
       return false;
     } catch (e) {
       appState.showErrorSnackBar(e.toString());
@@ -147,19 +148,19 @@ Future<bool> acceptLesson(
         lesson.link = link;
         lesson.isPending = false;
         appState.addLesson(lesson);
-        appState.showMsgSnackBar('Lesson Accepted');
+        appState.showMsgSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonAccepted);
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
         // TODO: logout
         return false;
       } else if (jsonResponse['Result'] == 'LESSON_DOESNT_EXIST') {
-        appState.showErrorSnackBar('Lesson Does Not Exist');
+        appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonDoesNotExist);
         // TODO: refresh lessons
         return false;
       }
       throw jsonResponse['Result'];
     } on FormatException {
-      appState.showErrorSnackBar('Json Format Error');
+      appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.jsonFormatError);
       return false;
     } catch (e) {
       appState.showErrorSnackBar(e.toString());
@@ -193,22 +194,19 @@ Future<bool> editLessonLink(
       if (jsonResponse['Result'] == 'SUCCESS') {
         lesson.link = newLink;
         appState.updateLessonLink(lesson.startTimestamp, newLink);
-        appState.showMsgSnackBar('Lesson Link Updated');
+        appState.showMsgSnackBar(AppLocalizations.of(appState.rootContext!)!.linkUpdated);
         return true;
-      } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
+      } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST' || jsonResponse['Result'] == 'WRONG_PASSWORD') {
         // TODO: logout
         return false;
       } else if (jsonResponse['Result'] == 'LESSON_DOESNT_EXIST') {
-        appState.showErrorSnackBar('Lesson Does Not Exist');
+        appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonDoesNotExist);
         // TODO: refresh lessons
-        return false;
-      } else if (jsonResponse['Result'] == 'WRONG_PASSWORD') {
-        appState.showErrorSnackBar('Wrong Password');
         return false;
       }
       throw jsonResponse['Result'];
     } on FormatException {
-      appState.showErrorSnackBar('Json Format Error');
+      appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.jsonFormatError);
       return false;
     } catch (e) {
       appState.showErrorSnackBar(e.toString());
@@ -239,19 +237,19 @@ Future<bool> rejectLesson(
       var jsonResponse = json.decode(response.body);
       if (jsonResponse['Result'] == 'SUCCESS') {
         appState.removeLesson(lesson.startTimestamp, studentID: lesson.studentID);
-        appState.showMsgSnackBar('Lesson Rejected');
+        appState.showMsgSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonCancelled);
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
         // TODO: logout
         return false;
       } else if (jsonResponse['Result'] == 'LESSON_DOESNT_EXIST') {
         appState.removeLesson(lesson.startTimestamp, studentID: lesson.studentID);
-        appState.showErrorSnackBar('Lesson does not exist');
+        appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonDoesNotExist);
         return false;
       }
       throw jsonResponse['Result'];
     } on FormatException {
-      appState.showErrorSnackBar('Json Format Error');
+      appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.jsonFormatError);
       return false;
     } catch (e) {
       appState.showErrorSnackBar(e.toString());

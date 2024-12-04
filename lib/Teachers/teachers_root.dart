@@ -5,6 +5,7 @@ import 'package:supreme_octo_eureka/Teachers/teachers_edit_profile_page.dart';
 import 'package:supreme_octo_eureka/Teachers/teachers_pending_lessons_page.dart';
 import 'package:supreme_octo_eureka/Widgets/lesson_card.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TeachersRoot extends StatelessWidget {
   const TeachersRoot({super.key});
@@ -24,7 +25,7 @@ class TeachersRoot extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'My Schedule',
+                  AppLocalizations.of(context)!.mySchedule,
                   style: Theme.of(context).textTheme.displaySmall,
                 ),
                 FilledButton.tonal(
@@ -55,7 +56,7 @@ class TeachersRoot extends StatelessWidget {
                     const Gap(8),
                     Expanded(
                       child: Text(
-                        'You can view and manage your upcoming lessons on this page. Tap the button at the bottom right to accept new lessons.',
+                        AppLocalizations.of(context)!.myScheduleDescription,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: appState.themeData.colorScheme.onTertiaryContainer,
                             ),
@@ -104,7 +105,7 @@ class TeachersRoot extends StatelessWidget {
                       const Gap(16),
                       Center(
                         child: Text(
-                          'No lessons booked.',
+                          AppLocalizations.of(context)!.noLessons,
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                 color: Theme.of(context).disabledColor,
@@ -140,7 +141,7 @@ class TeachersRoot extends StatelessWidget {
           );
         },
         icon: const Icon(Icons.add),
-        label: const Text('Accept Lessons'),
+        label: Text(AppLocalizations.of(context)!.acceptLessons),
       ),
     );
   }
