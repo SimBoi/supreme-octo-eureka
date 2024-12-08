@@ -94,7 +94,7 @@ Future<bool> cancelLesson(
       'AccountType': 'Customer',
       'Phone': appState.currentCustomer!.phone,
       'Password': appState.currentCustomer!.password,
-      'StartTimestamp': lesson.startTimestamp.toString(),
+      'OrderID': lesson.orderID.toString(),
     },
   );
 
@@ -133,8 +133,7 @@ Future<bool> acceptLesson(
       'AccountType': 'Teacher',
       'Phone': appState.currentTeacher!.phone,
       'Password': appState.currentTeacher!.password,
-      'StudentID': lesson.studentID.toString(),
-      'StartTimestamp': lesson.startTimestamp.toString(),
+      'OrderID': lesson.orderID.toString(),
       'Link': link,
     },
   );
@@ -182,8 +181,7 @@ Future<bool> editLessonLink(
       'AccountType': 'Teacher',
       'Phone': appState.currentTeacher!.phone,
       'Password': appState.currentTeacher!.password,
-      'StudentID': lesson.studentID.toString(),
-      'StartTimestamp': lesson.startTimestamp.toString(),
+      'OrderID': lesson.orderID.toString(),
       'NewLink': newLink,
     },
   );
@@ -227,8 +225,7 @@ Future<bool> rejectLesson(
       'AccountType': 'Teacher',
       'Phone': appState.currentTeacher!.phone,
       'Password': appState.currentTeacher!.password,
-      'StudentID': lesson.studentID.toString(),
-      'StartTimestamp': lesson.startTimestamp.toString(),
+      'OrderID': lesson.orderID.toString(),
     },
   );
 
