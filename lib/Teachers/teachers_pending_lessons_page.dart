@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:supreme_octo_eureka/Widgets/lesson_card.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:supreme_octo_eureka/authentication/auth_logic.dart';
 
 class PendingLessonsPage extends StatefulWidget {
   const PendingLessonsPage({super.key});
@@ -42,7 +43,7 @@ class _PendingLessonsPageState extends State<PendingLessonsPage> {
           });
           return;
         } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
-          // TODO: logout
+          logout(appState);
         } else {
           throw jsonResponse['Result'];
         }

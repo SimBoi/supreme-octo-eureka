@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:supreme_octo_eureka/app_state.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:supreme_octo_eureka/authentication/auth_logic.dart';
 
 Future<String?> createOrderRequest(
   Lesson lesson,
@@ -26,7 +27,7 @@ Future<String?> createOrderRequest(
         lesson.orderID = jsonResponse['OrderID'] as int;
         return jsonResponse['PaymentLink'];
       } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST' || jsonResponse['Result'] == 'WRONG_PASSWORD') {
-        // TODO: logout
+        logout(appState);
         return null;
       }
       throw jsonResponse['Result'];
@@ -66,7 +67,7 @@ Future<bool> confirmOrder(
         appState.showMsgSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonBooked);
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST' || jsonResponse['Result'] == 'WRONG_PASSWORD') {
-        // TODO: logout
+        logout(appState);
         return false;
       }
       throw jsonResponse['Result'];
@@ -106,7 +107,7 @@ Future<bool> cancelLesson(
         appState.showMsgSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonCancelled);
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
-        // TODO: logout
+        logout(appState);
         return false;
       }
       throw jsonResponse['Result'];
@@ -150,7 +151,7 @@ Future<bool> acceptLesson(
         appState.showMsgSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonAccepted);
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
-        // TODO: logout
+        logout(appState);
         return false;
       } else if (jsonResponse['Result'] == 'LESSON_DOESNT_EXIST') {
         appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonDoesNotExist);
@@ -195,7 +196,7 @@ Future<bool> editLessonLink(
         appState.showMsgSnackBar(AppLocalizations.of(appState.rootContext!)!.linkUpdated);
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST' || jsonResponse['Result'] == 'WRONG_PASSWORD') {
-        // TODO: logout
+        logout(appState);
         return false;
       } else if (jsonResponse['Result'] == 'LESSON_DOESNT_EXIST') {
         appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonDoesNotExist);
@@ -237,7 +238,7 @@ Future<bool> rejectLesson(
         appState.showMsgSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonCancelled);
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
-        // TODO: logout
+        logout(appState);
         return false;
       } else if (jsonResponse['Result'] == 'LESSON_DOESNT_EXIST') {
         appState.removeLesson(lesson.startTimestamp, studentID: lesson.studentID);

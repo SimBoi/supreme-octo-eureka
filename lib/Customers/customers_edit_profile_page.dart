@@ -35,7 +35,7 @@ class EditCustomerProfilePage extends StatelessWidget {
           appState.showMsgSnackBar(AppLocalizations.of(appState.rootContext!)!.profileUpdated);
           return true;
         } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
-          // TODO: logout
+          logout(appState);
           return false;
         }
         throw jsonResponse['Result'];
@@ -126,8 +126,6 @@ class EditCustomerProfilePage extends StatelessWidget {
                     TextButton(
                       onPressed: () {
                         logout(appState);
-                        Navigator.of(context).popUntil((route) => false);
-                        Navigator.of(context).pushNamed('/');
                       },
                       child: Text(AppLocalizations.of(context)!.logout),
                     ),
