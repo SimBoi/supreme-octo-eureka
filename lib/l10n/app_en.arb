@@ -69,5 +69,6 @@
     "confirmAcceptLesson": "Are you sure you want to accept the lesson?",
     "acceptLesson": "Accept Lesson",
     "confirmRejectLesson": "Are you sure you want to reject the lesson?",
-    "rejectLesson": "Reject Lesson"
+    "rejectLesson": "Reject Lesson",
+    "refresh": "Refresh"
 }

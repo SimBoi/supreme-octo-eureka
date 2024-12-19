@@ -50,6 +50,9 @@ class _OrderLessonPageState extends State<OrderLessonPage> {
   }
 
   void _onPageChanged(int page) {
+    // hide keyboard
+    FocusScope.of(context).unfocus();
+
     setState(() {
       _currentPage = page;
     });

@@ -6,10 +6,22 @@ import 'package:supreme_octo_eureka/Widgets/lesson_card.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class PendingLessonsPage extends StatelessWidget {
+class PendingLessonsPage extends StatefulWidget {
   const PendingLessonsPage({super.key});
 
-  Future<List<Lesson>> _getPendingLessons(AppState appState) async {
+  @override
+  State<PendingLessonsPage> createState() => _PendingLessonsPageState();
+}
+
+class _PendingLessonsPageState extends State<PendingLessonsPage> {
+  List<Lesson>? _pendingLessons = null;
+  bool _isRefreshing = false;
+
+  Future<void> _refreshPendingLessons(AppState appState) async {
+    if (_isRefreshing) return;
+
+    setState(() => _isRefreshing = true);
+
     var response = await appState.dbRequest(
       body: {
         'Action': 'GetPendingLessons',
@@ -24,12 +36,16 @@ class PendingLessonsPage extends StatelessWidget {
       try {
         var jsonResponse = json.decode(response.body);
         if (jsonResponse['Result'] == 'SUCCESS') {
-          return Lesson.fromJsonArray(jsonResponse['PendingLessons']);
+          setState(() {
+            _isRefreshing = false;
+            _pendingLessons = Lesson.fromJsonArray(jsonResponse['PendingLessons']);
+          });
+          return;
         } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
           // TODO: logout
-          return List.empty();
+        } else {
+          throw jsonResponse['Result'];
         }
-        throw jsonResponse['Result'];
       } on FormatException {
         appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.jsonFormatError);
       } catch (e) {
@@ -39,12 +55,16 @@ class PendingLessonsPage extends StatelessWidget {
       appState.showErrorSnackBar('${response.statusCode}: ${AppLocalizations.of(appState.rootContext!)!.unexpectedError}');
     }
 
-    return List.empty();
+    setState(() => _isRefreshing = false);
   }
 
   @override
   Widget build(BuildContext context) {
     var appState = context.read<AppState>();
+
+    if (_pendingLessons == null) {
+      _refreshPendingLessons(appState);
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -53,33 +73,35 @@ class PendingLessonsPage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: RefreshIndicator(
-          onRefresh: () => _getPendingLessons(appState),
-          child: FutureBuilder<List<Lesson>>(
-            future: _getPendingLessons(appState),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              } else if (snapshot.hasData && snapshot.data != null) {
-                return ListView(
-                  children: snapshot.data!.map((lesson) {
-                    return Column(
-                      children: [
-                        LessonCard(
-                          lesson: lesson,
-                          isCustomer: false,
-                        ),
-                        const Gap(16),
-                      ],
-                    );
-                  }).toList(),
-                );
-              } else {
-                return Center(child: Text(AppLocalizations.of(context)!.noPendingLessons));
-              }
-            },
-          ),
+          onRefresh: () => _refreshPendingLessons(appState),
+          child: _isRefreshing
+              ? const Center(child: CircularProgressIndicator())
+              : _pendingLessons != null && _pendingLessons!.isNotEmpty
+                  ? ListView(
+                      children: _pendingLessons!.map((lesson) {
+                        return Column(
+                          children: [
+                            LessonCard(
+                              lesson: lesson,
+                              isCustomer: false,
+                            ),
+                            const Gap(16),
+                          ],
+                        );
+                      }).toList(),
+                    )
+                  : Center(
+                      child: Column(
+                        children: [
+                          Text(AppLocalizations.of(context)!.noPendingLessons),
+                          const Gap(16),
+                          ElevatedButton(
+                            onPressed: () => _refreshPendingLessons(appState),
+                            child: Text(AppLocalizations.of(context)!.refresh),
+                          ),
+                        ],
+                      ),
+                    ),
         ),
       ),
     );
