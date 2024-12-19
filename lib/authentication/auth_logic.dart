@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -82,23 +83,12 @@ Future<bool> login(String phone, String password, AppState appState) async {
     return false;
   }
 
-  // wait until OneSignal ID is not empty with a timeout of 2 seconds
-  int elapsed = 0;
-  while (appState.oneSignalID == '' && elapsed < 2000) {
-    await Future.delayed(const Duration(milliseconds: 100));
-    elapsed += 100;
-  }
-  if (appState.oneSignalID == '') {
-    appState.showErrorSnackBar('OneSignal ID is empty!');
-  }
-
   var response = await appState.dbRequest(
     body: {
       'Action': 'Login',
       'AccountType': 'None',
       'Phone': phone,
       'Password': password,
-      'OneSignalID': appState.oneSignalID,
     },
   );
 
@@ -118,6 +108,8 @@ Future<bool> login(String phone, String password, AppState appState) async {
           orders: Order.fromJsonArray(jsonResponse['Orders']),
         );
 
+        await loginOneSignal(appState.currentCustomer!.id.toString());
+
         return true;
       } else if (jsonResponse['Result'] == 'TEACHER') {
         await saveCredentials(phone, password);
@@ -130,6 +122,8 @@ Future<bool> login(String phone, String password, AppState appState) async {
           password: password,
           currentAppointments: Lesson.fromJsonArray(jsonResponse['CurrentAppointments']),
         );
+
+        await loginOneSignal(appState.currentTeacher!.id.toString());
 
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
@@ -152,6 +146,21 @@ Future<bool> login(String phone, String password, AppState appState) async {
   }
 
   return false;
+}
+
+Future<void> loginOneSignal(String externalID, {int timeout = 2000}) async {
+  // wait for the OneSignal ID to be available
+  var startTime = DateTime.now();
+  while (DateTime.now().difference(startTime).inMilliseconds < timeout) {
+    String oneSignalId = await OneSignal.User.getOnesignalId() ?? '';
+    if (oneSignalId != '') {
+      break;
+    }
+    await Future.delayed(const Duration(milliseconds: 100));
+  }
+
+  OneSignal.login(externalID);
+  OneSignal.User.pushSubscription.optIn();
 }
 
 Future<void> logout(AppState appState) async {

@@ -143,7 +143,6 @@ class AppState extends ChangeNotifier {
   AccountType accountType = AccountType.none;
   Customer? currentCustomer;
   Teacher? currentTeacher;
-  String oneSignalID = '';
   String language = 'en';
   bool isLoading = false;
 

@@ -22,15 +22,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     AppState appState = AppState();
 
-    // Check if OneSignal is available on the current platform
+    // Check if OneSignal is available on the current platform and initialize it
     if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android) {
-      // Initialize OneSignal
       OneSignal.initialize("e7d7a2bd-815c-4bd9-92dd-9b1f772b20c9");
-      // Prompt for push notifications
       OneSignal.Notifications.requestPermission(true);
-      OneSignal.User.addObserver(
-        (stateChanges) => appState.oneSignalID = stateChanges.current.onesignalId ?? '',
-      );
     }
 
     // Set up global keys for navigation and messaging
