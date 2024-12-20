@@ -169,8 +169,14 @@ Future<void> logout(AppState appState) async {
   appState.currentCustomer = null;
   appState.currentTeacher = null;
 
+  await logoutOneSignal();
+
   // remove all routes and push the login page
   appState.navigatorKey.currentState!.pushNamedAndRemoveUntil('/', (route) => false);
+}
+
+Future<void> logoutOneSignal() async {
+  OneSignal.logout();
 }
 
 Future<bool> signup(String phone, String username, AppState appState) async {
