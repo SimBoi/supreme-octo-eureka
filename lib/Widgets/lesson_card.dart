@@ -52,7 +52,7 @@ class LessonCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (!lesson.isPending)
+              if (!lesson.isPending && isCustomer)
                 ListTile(
                   leading: const Icon(Icons.person),
                   title: Row(
