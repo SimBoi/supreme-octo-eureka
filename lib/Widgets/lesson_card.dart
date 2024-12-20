@@ -36,16 +36,31 @@ class LessonCard extends StatelessWidget {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: <Widget>[
-              ListTile(title: Text(lesson.title)),
+              ListTile(
+                leading: const Icon(Icons.topic),
+                title: Text(lesson.title),
+              ),
+              ListTile(
+                leading: const Icon(Icons.subject),
+                title: Row(
+                  children: [
+                    Text(lesson.subject.name(context)),
+                    const Gap(16),
+                    const Icon(Icons.school),
+                    const Gap(16),
+                    Text(lesson.grade.name(context)),
+                  ],
+                ),
+              ),
               if (!lesson.isPending)
                 ListTile(
                   leading: const Icon(Icons.person),
                   title: Row(
                     children: [
                       Text(isCustomer ? lesson.teacherName : lesson.studentName),
-                      const Gap(8),
+                      const Gap(16),
                       const Icon(Icons.phone),
-                      const Gap(8),
+                      const Gap(16),
                       Text(isCustomer ? lesson.teacherPhone : lesson.studentPhone),
                     ],
                   ),
@@ -55,9 +70,9 @@ class LessonCard extends StatelessWidget {
                 title: Row(
                   children: [
                     Text('${lessonDate.day}/${lessonDate.month} ${lessonDate.hour % 12 == 0 ? 12 : lessonDate.hour % 12}:${lessonDate.minute.toString().padLeft(2, '0')} ${lessonDate.hour >= 12 ? 'PM' : 'AM'}'),
-                    const Gap(8),
-                    const Icon(Icons.access_time),
-                    const Gap(8),
+                    const Gap(16),
+                    const Icon(Icons.access_time_filled),
+                    const Gap(16),
                     if (lesson.durationMinutes >= 60) Text(AppLocalizations.of(context)!.hours((lesson.durationMinutes / 60).toStringAsFixed((lesson.durationMinutes % 60 == 0) ? 0 : 1))) else Text(AppLocalizations.of(context)!.minutes(lesson.durationMinutes.toString())),
                   ],
                 ),

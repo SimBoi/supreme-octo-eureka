@@ -14,9 +14,10 @@ Future<String?> createOrderRequest(
       'Phone': appState.currentCustomer!.phone,
       'Password': appState.currentCustomer!.password,
       'Title': lesson.title,
+      'Subject': lesson.subject.index.toString(),
+      'Grade': lesson.grade.index.toString(),
       'StartTimestamp': lesson.startTimestamp.toString(),
       'DurationMinutes': lesson.durationMinutes.toString(),
-      'Language': 'ENG', // TODO: language
     },
   );
 
