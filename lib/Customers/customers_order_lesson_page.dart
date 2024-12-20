@@ -18,6 +18,8 @@ class _OrderLessonPageState extends State<OrderLessonPage> {
   int _currentPage = 0;
 
   String _title = '';
+  Subject? _subject;
+  Grade? _grade;
   DateTime _dateTime = DateTime.now().subtract(Duration(seconds: DateTime.now().second, milliseconds: DateTime.now().millisecond, microseconds: DateTime.now().microsecond)).add(const Duration(minutes: 60));
   int _duration = 60;
 
@@ -38,17 +40,6 @@ class _OrderLessonPageState extends State<OrderLessonPage> {
     }
   }
 
-  void _previousPage() {
-    if (_currentPage > 0) {
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    } else {
-      Navigator.of(context).pop();
-    }
-  }
-
   void _onPageChanged(int page) {
     // hide keyboard
     FocusScope.of(context).unfocus();
@@ -58,9 +49,11 @@ class _OrderLessonPageState extends State<OrderLessonPage> {
     });
   }
 
-  void _setTitle(String title) {
+  void _setDetails(String title, Subject? subject, Grade? grade) {
     setState(() {
       _title = title;
+      _subject = subject;
+      _grade = grade;
     });
   }
 
@@ -78,60 +71,82 @@ class _OrderLessonPageState extends State<OrderLessonPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.orderLesson),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: _previousPage,
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+
+        if (_currentPage > 0) {
+          _pageController.previousPage(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        } else {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(AppLocalizations.of(context)!.orderLesson),
+          automaticallyImplyLeading: true,
         ),
-      ),
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: _onPageChanged,
-        physics: const NeverScrollableScrollPhysics(),
-        children: <Widget>[
-          OrderLessonTitlePage(
-            onTitleSelected: _setTitle,
-            nextPage: _nextPage,
-            initialTitle: _title,
-          ),
-          OrderLessonDateTimePage(
-            onDateTimeSelected: _setDateTime,
-            nextPage: _nextPage,
-            initialDateTime: _dateTime,
-          ),
-          OrderLessonDurationPage(
-            onDurationSelected: _setDuration,
-            nextPage: _nextPage,
-            initialDuration: _duration,
-          ),
-          OrderLessonConfirmationPage(
-            title: _title,
-            dateTime: _dateTime,
-            duration: _duration,
-          ),
-        ],
+        body: PageView(
+          controller: _pageController,
+          onPageChanged: _onPageChanged,
+          physics: const NeverScrollableScrollPhysics(),
+          children: <Widget>[
+            OrderLessonDetailsPage(
+              onDetailsSelected: _setDetails,
+              nextPage: _nextPage,
+              initialTitle: _title,
+              initialSubject: _subject,
+              initialGrade: _grade,
+            ),
+            OrderLessonDateTimePage(
+              onDateTimeSelected: _setDateTime,
+              nextPage: _nextPage,
+              initialDateTime: _dateTime,
+            ),
+            OrderLessonDurationPage(
+              onDurationSelected: _setDuration,
+              nextPage: _nextPage,
+              initialDuration: _duration,
+            ),
+            OrderLessonConfirmationPage(
+              title: _title,
+              subject: _subject,
+              grade: _grade,
+              dateTime: _dateTime,
+              duration: _duration,
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class OrderLessonTitlePage extends StatelessWidget {
-  final Function(String) onTitleSelected;
+class OrderLessonDetailsPage extends StatelessWidget {
+  final Function(String, Subject?, Grade?) onDetailsSelected;
   final VoidCallback nextPage;
   final String initialTitle;
+  final Subject? initialSubject;
+  final Grade? initialGrade;
 
-  const OrderLessonTitlePage({
+  const OrderLessonDetailsPage({
     super.key,
-    required this.onTitleSelected,
+    required this.onDetailsSelected,
     required this.nextPage,
     this.initialTitle = '',
+    this.initialSubject,
+    this.initialGrade,
   });
 
   @override
   Widget build(BuildContext context) {
     TextEditingController controller = TextEditingController(text: initialTitle);
+    Subject? subject = initialSubject;
+    Grade? grade = initialGrade;
     AppState appState = context.read<AppState>();
 
     return Center(
@@ -149,12 +164,40 @@ class OrderLessonTitlePage extends StatelessWidget {
               ),
             ),
             const Gap(16.0),
+            DropdownButton<Subject>(
+              value: subject,
+              hint: Text(AppLocalizations.of(context)!.subjectHint),
+              items: Subject.values.map((Subject subject) {
+                return DropdownMenuItem<Subject>(value: subject, child: Text(subject.name(context)));
+              }).toList(),
+              onChanged: (Subject? newValue) {
+                if (newValue != null) {
+                  subject = newValue;
+                  onDetailsSelected(controller.text, subject, grade);
+                }
+              },
+            ),
+            const Gap(16.0),
+            DropdownButton<Grade>(
+              value: grade,
+              hint: Text(AppLocalizations.of(context)!.gradeHint),
+              items: Grade.values.map((Grade grade) {
+                return DropdownMenuItem<Grade>(value: grade, child: Text(grade.name(context)));
+              }).toList(),
+              onChanged: (Grade? newValue) {
+                if (newValue != null) {
+                  grade = newValue;
+                  onDetailsSelected(controller.text, subject, grade);
+                }
+              },
+            ),
+            const Gap(16.0),
             Align(
               alignment: Alignment.centerRight,
               child: ElevatedButton(
                 onPressed: () {
-                  onTitleSelected(controller.text);
-                  if (controller.text.isNotEmpty) {
+                  onDetailsSelected(controller.text, subject, grade);
+                  if (controller.text.isNotEmpty && subject != null && grade != null) {
                     nextPage();
                   } else {
                     appState.showErrorSnackBar(AppLocalizations.of(context)!.titleCannotBeEmpty);
@@ -276,12 +319,16 @@ class OrderLessonDurationPage extends StatelessWidget {
 
 class OrderLessonConfirmationPage extends StatelessWidget {
   final String title;
+  final Subject? subject;
+  final Grade? grade;
   final DateTime dateTime;
   final int duration;
 
   const OrderLessonConfirmationPage({
     super.key,
     required this.title,
+    required this.subject,
+    required this.grade,
     required this.dateTime,
     required this.duration,
   });
@@ -300,7 +347,32 @@ class OrderLessonConfirmationPage extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
-                      Text(title),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.topic),
+                          const Gap(8),
+                          Text(title),
+                        ],
+                      ),
+                      const Gap(16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.subject),
+                          const Gap(8),
+                          Text(subject!.name(context)),
+                        ],
+                      ),
+                      const Gap(16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.school),
+                          const Gap(8),
+                          Text(grade!.name(context)),
+                        ],
+                      ),
                       const Gap(16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -330,14 +402,16 @@ class OrderLessonConfirmationPage extends StatelessWidget {
                 AppState appState = context.read<AppState>();
                 Lesson lesson = Lesson(
                   orderID: 0,
-                  title: title,
-                  startTimestamp: dateTime.millisecondsSinceEpoch ~/ 1000,
                   studentID: appState.currentCustomer!.id,
                   studentName: appState.currentCustomer!.username,
                   studentPhone: appState.currentCustomer!.phone,
                   teacherID: 0,
                   teacherName: '',
                   teacherPhone: '',
+                  title: title,
+                  subject: subject!,
+                  grade: grade!,
+                  startTimestamp: dateTime.millisecondsSinceEpoch ~/ 1000,
                   durationMinutes: duration,
                   isPending: true,
                   link: '',

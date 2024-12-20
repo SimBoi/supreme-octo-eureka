@@ -9,6 +9,98 @@ enum AccountType {
   teacher,
 }
 
+enum Subject {
+  math,
+  english,
+  hebrew,
+  arabic,
+  history,
+  geography,
+  physics,
+  chemistry,
+  biology,
+  computerScience,
+  other,
+}
+
+extension SubjectExtension on Subject {
+  String name(BuildContext context) {
+    switch (this) {
+      case Subject.math:
+        return AppLocalizations.of(context)!.subjectMath;
+      case Subject.english:
+        return AppLocalizations.of(context)!.subjectEnglish;
+      case Subject.hebrew:
+        return AppLocalizations.of(context)!.subjectHebrew;
+      case Subject.arabic:
+        return AppLocalizations.of(context)!.subjectArabic;
+      case Subject.history:
+        return AppLocalizations.of(context)!.subjectHistory;
+      case Subject.geography:
+        return AppLocalizations.of(context)!.subjectGeography;
+      case Subject.physics:
+        return AppLocalizations.of(context)!.subjectPhysics;
+      case Subject.chemistry:
+        return AppLocalizations.of(context)!.subjectChemistry;
+      case Subject.biology:
+        return AppLocalizations.of(context)!.subjectBiology;
+      case Subject.computerScience:
+        return AppLocalizations.of(context)!.subjectComputerScience;
+      case Subject.other:
+        return AppLocalizations.of(context)!.subjectOther;
+    }
+  }
+}
+
+enum Grade {
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+  sixth,
+  seventh,
+  eighth,
+  ninth,
+  tenth,
+  eleventh,
+  twelfth,
+  other,
+}
+
+extension GradeExtension on Grade {
+  String name(BuildContext context) {
+    switch (this) {
+      case Grade.first:
+        return AppLocalizations.of(context)!.gradeFirst;
+      case Grade.second:
+        return AppLocalizations.of(context)!.gradeSecond;
+      case Grade.third:
+        return AppLocalizations.of(context)!.gradeThird;
+      case Grade.fourth:
+        return AppLocalizations.of(context)!.gradeFourth;
+      case Grade.fifth:
+        return AppLocalizations.of(context)!.gradeFifth;
+      case Grade.sixth:
+        return AppLocalizations.of(context)!.gradeSixth;
+      case Grade.seventh:
+        return AppLocalizations.of(context)!.gradeSeventh;
+      case Grade.eighth:
+        return AppLocalizations.of(context)!.gradeEighth;
+      case Grade.ninth:
+        return AppLocalizations.of(context)!.gradeNinth;
+      case Grade.tenth:
+        return AppLocalizations.of(context)!.gradeTenth;
+      case Grade.eleventh:
+        return AppLocalizations.of(context)!.gradeEleventh;
+      case Grade.twelfth:
+        return AppLocalizations.of(context)!.gradeTwelfth;
+      case Grade.other:
+        return AppLocalizations.of(context)!.gradeOther;
+    }
+  }
+}
+
 class Lesson {
   int orderID;
   int studentID;
@@ -18,6 +110,8 @@ class Lesson {
   String teacherName;
   String teacherPhone;
   String title;
+  Subject subject = Subject.other;
+  Grade grade;
   int startTimestamp;
   int durationMinutes;
   bool isPending;
@@ -32,6 +126,8 @@ class Lesson {
     required this.teacherName,
     required this.teacherPhone,
     required this.title,
+    required this.subject,
+    required this.grade,
     required this.startTimestamp,
     required this.durationMinutes,
     required this.isPending,
@@ -51,6 +147,8 @@ class Lesson {
         teacherName: jsonAppointment['TeacherName'] as String,
         teacherPhone: jsonAppointment['TeacherPhone'] as String,
         title: jsonAppointment['Title'] as String,
+        subject: Subject.values[jsonAppointment['Subject'] as int],
+        grade: Grade.values[jsonAppointment['Grade'] as int],
         startTimestamp: jsonAppointment['StartTimestamp'] as int,
         durationMinutes: jsonAppointment['DurationMinutes'] as int,
         isPending: jsonAppointment['IsPending'] as bool,
