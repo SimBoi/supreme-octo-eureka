@@ -41,9 +41,11 @@ class _PendingLessonsPageState extends State<PendingLessonsPage> {
       try {
         var jsonResponse = json.decode(response.body);
         if (jsonResponse['Result'] == 'SUCCESS') {
+          List<Lesson> decodedLessons = Lesson.fromJsonArray(jsonResponse['PendingLessons']);
+          decodedLessons.sort((a, b) => a.startTimestamp.compareTo(b.startTimestamp));
           setState(() {
             _isRefreshing = false;
-            _pendingLessons = Lesson.fromJsonArray(jsonResponse['PendingLessons']);
+            _pendingLessons = decodedLessons;
           });
           _applyFilters();
           return;
