@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -149,6 +150,11 @@ Future<bool> login(String phone, String password, AppState appState) async {
 }
 
 Future<void> loginOneSignal(String externalID, {int timeout = 2000}) async {
+  // check if OneSignal is available on this platform
+  if (defaultTargetPlatform != TargetPlatform.iOS && defaultTargetPlatform != TargetPlatform.android) {
+    return;
+  }
+
   // wait for the OneSignal ID to be available
   var startTime = DateTime.now();
   while (DateTime.now().difference(startTime).inMilliseconds < timeout) {
@@ -176,6 +182,11 @@ Future<void> logout(AppState appState) async {
 }
 
 Future<void> logoutOneSignal() async {
+  // check if OneSignal is available on this platform
+  if (defaultTargetPlatform != TargetPlatform.iOS && defaultTargetPlatform != TargetPlatform.android) {
+    return;
+  }
+
   OneSignal.logout();
 }
 
