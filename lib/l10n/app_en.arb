@@ -71,6 +71,7 @@
     "confirmRejectLesson": "Are you sure you want to reject the lesson?",
     "rejectLesson": "Reject Lesson",
     "refresh": "Refresh",
+    "subjectAny": "Any Subject",
     "subjectMath": "Math",
     "subjectEnglish": "English",
     "subjectHebrew": "Hebrew",
@@ -81,7 +82,7 @@
     "subjectChemistry": "Chemistry",
     "subjectBiology": "Biology",
     "subjectComputerScience": "Computer Science",
-    "subjectOther": "Other",
+    "gradeAny": "Any Grade",
     "gradeFirst": "First Grade",
     "gradeSecond": "Second Grade",
     "gradeThird": "Third Grade",
@@ -94,7 +95,11 @@
     "gradeTenth": "Tenth Grade",
     "gradeEleventh": "Eleventh Grade",
     "gradeTwelfth": "Twelfth Grade",
-    "gradeOther": "Other",
+    "gradeHigherEducation": "Higher Education",
     "subjectHint": "Select the subject of the lesson",
-    "gradeHint": "Select the grade of the student"
+    "gradeHint": "Select the grade of the student",
+    "subject": "Subject",
+    "grade": "Grade",
+    "fromGrade": "From Grade",
+    "toGrade": "To Grade"
 }

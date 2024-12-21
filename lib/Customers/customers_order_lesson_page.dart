@@ -167,7 +167,7 @@ class OrderLessonDetailsPage extends StatelessWidget {
             DropdownButton<Subject>(
               value: subject,
               hint: Text(AppLocalizations.of(context)!.subjectHint),
-              items: Subject.values.map((Subject subject) {
+              items: Subject.values.skip(1).map((Subject subject) {
                 return DropdownMenuItem<Subject>(value: subject, child: Text(subject.name(context)));
               }).toList(),
               onChanged: (Subject? newValue) {
@@ -181,7 +181,7 @@ class OrderLessonDetailsPage extends StatelessWidget {
             DropdownButton<Grade>(
               value: grade,
               hint: Text(AppLocalizations.of(context)!.gradeHint),
-              items: Grade.values.map((Grade grade) {
+              items: Grade.values.skip(1).map((Grade grade) {
                 return DropdownMenuItem<Grade>(value: grade, child: Text(grade.name(context)));
               }).toList(),
               onChanged: (Grade? newValue) {

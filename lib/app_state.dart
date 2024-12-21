@@ -10,6 +10,7 @@ enum AccountType {
 }
 
 enum Subject {
+  any,
   math,
   english,
   hebrew,
@@ -20,12 +21,13 @@ enum Subject {
   chemistry,
   biology,
   computerScience,
-  other,
 }
 
 extension SubjectExtension on Subject {
   String name(BuildContext context) {
     switch (this) {
+      case Subject.any:
+        return AppLocalizations.of(context)!.subjectAny;
       case Subject.math:
         return AppLocalizations.of(context)!.subjectMath;
       case Subject.english:
@@ -46,13 +48,12 @@ extension SubjectExtension on Subject {
         return AppLocalizations.of(context)!.subjectBiology;
       case Subject.computerScience:
         return AppLocalizations.of(context)!.subjectComputerScience;
-      case Subject.other:
-        return AppLocalizations.of(context)!.subjectOther;
     }
   }
 }
 
 enum Grade {
+  any,
   first,
   second,
   third,
@@ -65,12 +66,14 @@ enum Grade {
   tenth,
   eleventh,
   twelfth,
-  other,
+  higherEducation,
 }
 
 extension GradeExtension on Grade {
   String name(BuildContext context) {
     switch (this) {
+      case Grade.any:
+        return AppLocalizations.of(context)!.gradeAny;
       case Grade.first:
         return AppLocalizations.of(context)!.gradeFirst;
       case Grade.second:
@@ -95,8 +98,8 @@ extension GradeExtension on Grade {
         return AppLocalizations.of(context)!.gradeEleventh;
       case Grade.twelfth:
         return AppLocalizations.of(context)!.gradeTwelfth;
-      case Grade.other:
-        return AppLocalizations.of(context)!.gradeOther;
+      case Grade.higherEducation:
+        return AppLocalizations.of(context)!.gradeHigherEducation;
     }
   }
 }
@@ -110,7 +113,7 @@ class Lesson {
   String teacherName;
   String teacherPhone;
   String title;
-  Subject subject = Subject.other;
+  Subject subject;
   Grade grade;
   int startTimestamp;
   int durationMinutes;

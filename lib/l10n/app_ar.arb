@@ -71,6 +71,7 @@
     "confirmRejectLesson": "هل أنت متأكد أنك تريد رفض الدرس؟",
     "rejectLesson": "رفض الدرس",
     "refresh": "تحديث",
+    "subjectAny": "أي موضوع",
     "subjectMath": "الرياضيات",
     "subjectEnglish": "الإنجليزية",
     "subjectHebrew": "العبرية",
@@ -81,7 +82,7 @@
     "subjectChemistry": "الكيمياء",
     "subjectBiology": "بيولوجيا",
     "subjectComputerScience": "علوم الحاسوب",
-    "subjectOther": "أخرى",
+    "gradeAny": "أي صف",
     "gradeFirst": "الصف الأول",
     "gradeSecond": "الصف الثاني",
     "gradeThird": "الصف الثالث",
@@ -94,7 +95,11 @@
     "gradeTenth": "الصف العاشر",
     "gradeEleventh": "الصف الحادي عشر",
     "gradeTwelfth": "الصف الثاني عشر",
-    "gradeOther": "أخرى",
+    "gradeHigherEducation": "التعليم العالي",
     "subjectHint": "اختر موضوع الدرس",
-    "gradeHint": "اختر صف الطالب"
+    "gradeHint": "اختر صف الطالب",
+    "subject": "الموضوع",
+    "grade": "الصف",
+    "fromGrade": "من الصف",
+    "toGrade": "إلى الصف"
 }

@@ -15,8 +15,12 @@ class PendingLessonsPage extends StatefulWidget {
 }
 
 class _PendingLessonsPageState extends State<PendingLessonsPage> {
-  List<Lesson>? _pendingLessons = null;
+  List<Lesson>? _pendingLessons;
   bool _isRefreshing = false;
+  List<Lesson>? _filteredLessons;
+  Subject _subjectFilter = Subject.any;
+  Grade _minGradeFilter = Grade.any;
+  Grade _maxGradeFilter = Grade.any;
 
   Future<void> _refreshPendingLessons(AppState appState) async {
     if (_isRefreshing) return;
@@ -41,6 +45,7 @@ class _PendingLessonsPageState extends State<PendingLessonsPage> {
             _isRefreshing = false;
             _pendingLessons = Lesson.fromJsonArray(jsonResponse['PendingLessons']);
           });
+          _applyFilters();
           return;
         } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
           logout(appState);
@@ -59,6 +64,19 @@ class _PendingLessonsPageState extends State<PendingLessonsPage> {
     setState(() => _isRefreshing = false);
   }
 
+  void _applyFilters() {
+    int minGrade = _minGradeFilter == Grade.any ? 0 : _minGradeFilter.index;
+    int maxGrade = _maxGradeFilter == Grade.any ? Grade.values.length - 1 : _maxGradeFilter.index;
+
+    if (_pendingLessons == null) {
+      setState(() => _filteredLessons = null);
+    } else {
+      setState(() => _filteredLessons = _pendingLessons!.where((lesson) {
+            return (_subjectFilter == Subject.any || lesson.subject == _subjectFilter) && (minGrade <= lesson.grade.index && lesson.grade.index <= maxGrade);
+          }).toList());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var appState = context.read<AppState>();
@@ -73,36 +91,102 @@ class _PendingLessonsPageState extends State<PendingLessonsPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: RefreshIndicator(
-          onRefresh: () => _refreshPendingLessons(appState),
-          child: _isRefreshing
-              ? const Center(child: CircularProgressIndicator())
-              : _pendingLessons != null && _pendingLessons!.isNotEmpty
-                  ? ListView(
-                      children: _pendingLessons!.map((lesson) {
-                        return Column(
-                          children: [
-                            LessonCard(
-                              lesson: lesson,
-                              isCustomer: false,
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Text('${AppLocalizations.of(context)!.subject}:'),
+                const Gap(16),
+                DropdownButton<Subject>(
+                  value: _subjectFilter,
+                  onChanged: (value) {
+                    _subjectFilter = value ?? Subject.any;
+                    _applyFilters();
+                  },
+                  items: Subject.values.map((subject) {
+                    return DropdownMenuItem(
+                      value: subject,
+                      child: Text(subject.name(context)),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+            const Gap(16),
+            Row(
+              children: [
+                Text(AppLocalizations.of(context)!.fromGrade),
+                const Gap(16),
+                DropdownButton<Grade>(
+                  value: _minGradeFilter,
+                  onChanged: (value) {
+                    _minGradeFilter = value ?? Grade.any;
+                    _applyFilters();
+                  },
+                  items: Grade.values.map((grade) {
+                    return DropdownMenuItem(
+                      value: grade,
+                      child: Text(grade.name(context)),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+            const Gap(8),
+            Row(
+              children: [
+                Text(AppLocalizations.of(context)!.toGrade),
+                const Gap(16),
+                DropdownButton<Grade>(
+                  value: _maxGradeFilter,
+                  onChanged: (value) {
+                    _maxGradeFilter = value ?? Grade.any;
+                    _applyFilters();
+                  },
+                  items: Grade.values.map((grade) {
+                    return DropdownMenuItem(
+                      value: grade,
+                      child: Text(grade.name(context)),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+            const Gap(16),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () => _refreshPendingLessons(appState),
+                child: _isRefreshing
+                    ? const Center(child: CircularProgressIndicator())
+                    : _filteredLessons != null && _filteredLessons!.isNotEmpty
+                        ? ListView(
+                            children: _filteredLessons!.map((lesson) {
+                              return Column(
+                                children: [
+                                  LessonCard(
+                                    lesson: lesson,
+                                    isCustomer: false,
+                                  ),
+                                  const Gap(16),
+                                ],
+                              );
+                            }).toList(),
+                          )
+                        : Center(
+                            child: Column(
+                              children: [
+                                Text(AppLocalizations.of(context)!.noPendingLessons),
+                                const Gap(16),
+                                ElevatedButton(
+                                  onPressed: () => _refreshPendingLessons(appState),
+                                  child: Text(AppLocalizations.of(context)!.refresh),
+                                ),
+                              ],
                             ),
-                            const Gap(16),
-                          ],
-                        );
-                      }).toList(),
-                    )
-                  : Center(
-                      child: Column(
-                        children: [
-                          Text(AppLocalizations.of(context)!.noPendingLessons),
-                          const Gap(16),
-                          ElevatedButton(
-                            onPressed: () => _refreshPendingLessons(appState),
-                            child: Text(AppLocalizations.of(context)!.refresh),
                           ),
-                        ],
-                      ),
-                    ),
+              ),
+            ),
+          ],
         ),
       ),
     );

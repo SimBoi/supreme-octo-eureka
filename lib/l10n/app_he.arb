@@ -71,6 +71,7 @@
     "confirmRejectLesson": "האם אתה בטוח שברצונך לדחות את השיעור?",
     "rejectLesson": "דחה שיעור",
     "refresh": "רענן",
+    "subjectAny": "כל נושא",
     "subjectMath": "מתמטיקה",
     "subjectEnglish": "אנגלית",
     "subjectHebrew": "עברית",
@@ -81,7 +82,7 @@
     "subjectChemistry": "כימיה",
     "subjectBiology": "ביולוגיה",
     "subjectComputerScience": "מדעי המחשב",
-    "subjectOther": "אחר",
+    "gradeAny": "כל כיתה",
     "gradeFirst": "כיתה א'",
     "gradeSecond": "כיתה ב'",
     "gradeThird": "כיתה ג'",
@@ -94,7 +95,11 @@
     "gradeTenth": "כיתה י'",
     "gradeEleventh": "כיתה י\"א",
     "gradeTwelfth": "כיתה י\"ב",
-    "gradeOther": "אחר",
+    "gradeHigherEducation": "השכלה גבוהה",
     "subjectHint": "בחר את נושא השיעור",
-    "gradeHint": "בחר את כיתת התלמיד"
+    "gradeHint": "בחר את כיתת התלמיד",
+    "subject": "נושא",
+    "grade": "כיתה",
+    "fromGrade": "מכיתה",
+    "toGrade": "לכיתה"
 }
