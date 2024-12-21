@@ -93,60 +93,54 @@ class _PendingLessonsPageState extends State<PendingLessonsPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Row(
-              children: [
-                Text('${AppLocalizations.of(context)!.subject}:'),
-                const Gap(16),
-                DropdownButton<Subject>(
-                  value: _subjectFilter,
-                  onChanged: (value) {
-                    _subjectFilter = value ?? Subject.any;
-                    _applyFilters();
-                  },
-                  items: Subject.values.map((subject) {
-                    return DropdownMenuItem(
-                      value: subject,
-                      child: Text(subject.name(context)),
-                    );
-                  }).toList(),
-                ),
-              ],
+            Align(
+              alignment: Alignment.centerLeft,
+              child: DropdownMenu<Subject>(
+                initialSelection: _subjectFilter,
+                label: Text(AppLocalizations.of(context)!.subject),
+                onSelected: (value) {
+                  _subjectFilter = value ?? Subject.any;
+                  _applyFilters();
+                },
+                dropdownMenuEntries: Subject.values.map((subject) {
+                  return DropdownMenuEntry(
+                    value: subject,
+                    label: subject.name(context),
+                  );
+                }).toList(),
+              ),
             ),
             const Gap(16),
             Row(
               children: [
-                Text(AppLocalizations.of(context)!.fromGrade),
-                const Gap(16),
-                DropdownButton<Grade>(
-                  value: _minGradeFilter,
-                  onChanged: (value) {
+                DropdownMenu<Grade>(
+                  initialSelection: _minGradeFilter,
+                  label: Text(AppLocalizations.of(context)!.fromGrade),
+                  onSelected: (value) {
                     _minGradeFilter = value ?? Grade.any;
                     _applyFilters();
                   },
-                  items: Grade.values.map((grade) {
-                    return DropdownMenuItem(
+                  dropdownMenuEntries: Grade.values.map((grade) {
+                    return DropdownMenuEntry(
                       value: grade,
-                      child: Text(grade.name(context)),
+                      label: grade.name(context),
                     );
                   }).toList(),
                 ),
-              ],
-            ),
-            const Gap(8),
-            Row(
-              children: [
-                Text(AppLocalizations.of(context)!.toGrade),
-                const Gap(16),
-                DropdownButton<Grade>(
-                  value: _maxGradeFilter,
-                  onChanged: (value) {
+                const Gap(4),
+                const Text('-'),
+                const Gap(4),
+                DropdownMenu<Grade>(
+                  initialSelection: _maxGradeFilter,
+                  label: Text(AppLocalizations.of(context)!.toGrade),
+                  onSelected: (value) {
                     _maxGradeFilter = value ?? Grade.any;
                     _applyFilters();
                   },
-                  items: Grade.values.map((grade) {
-                    return DropdownMenuItem(
+                  dropdownMenuEntries: Grade.values.map((grade) {
+                    return DropdownMenuEntry(
                       value: grade,
-                      child: Text(grade.name(context)),
+                      label: grade.name(context),
                     );
                   }).toList(),
                 ),
@@ -172,17 +166,16 @@ class _PendingLessonsPageState extends State<PendingLessonsPage> {
                               );
                             }).toList(),
                           )
-                        : Center(
-                            child: Column(
-                              children: [
-                                Text(AppLocalizations.of(context)!.noPendingLessons),
-                                const Gap(16),
-                                ElevatedButton(
-                                  onPressed: () => _refreshPendingLessons(appState),
-                                  child: Text(AppLocalizations.of(context)!.refresh),
-                                ),
-                              ],
-                            ),
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(AppLocalizations.of(context)!.noPendingLessons),
+                              const Gap(16),
+                              ElevatedButton(
+                                onPressed: () => _refreshPendingLessons(appState),
+                                child: Text(AppLocalizations.of(context)!.refresh),
+                              ),
+                            ],
                           ),
               ),
             ),

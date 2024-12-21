@@ -164,32 +164,38 @@ class OrderLessonDetailsPage extends StatelessWidget {
               ),
             ),
             const Gap(16.0),
-            DropdownButton<Subject>(
-              value: subject,
-              hint: Text(AppLocalizations.of(context)!.subjectHint),
-              items: Subject.values.skip(1).map((Subject subject) {
-                return DropdownMenuItem<Subject>(value: subject, child: Text(subject.name(context)));
-              }).toList(),
-              onChanged: (Subject? newValue) {
+            DropdownMenu<Subject>(
+              initialSelection: subject,
+              hintText: AppLocalizations.of(context)!.subjectHint,
+              onSelected: (Subject? newValue) {
                 if (newValue != null) {
                   subject = newValue;
                   onDetailsSelected(controller.text, subject, grade);
                 }
               },
+              dropdownMenuEntries: Subject.values.skip(1).map((Subject subject) {
+                return DropdownMenuEntry<Subject>(
+                  value: subject,
+                  label: subject.name(context),
+                );
+              }).toList(),
             ),
             const Gap(16.0),
-            DropdownButton<Grade>(
-              value: grade,
-              hint: Text(AppLocalizations.of(context)!.gradeHint),
-              items: Grade.values.skip(1).map((Grade grade) {
-                return DropdownMenuItem<Grade>(value: grade, child: Text(grade.name(context)));
-              }).toList(),
-              onChanged: (Grade? newValue) {
+            DropdownMenu<Grade>(
+              initialSelection: grade,
+              hintText: AppLocalizations.of(context)!.gradeHint,
+              onSelected: (Grade? newValue) {
                 if (newValue != null) {
                   grade = newValue;
                   onDetailsSelected(controller.text, subject, grade);
                 }
               },
+              dropdownMenuEntries: Grade.values.skip(1).map((Grade grade) {
+                return DropdownMenuEntry<Grade>(
+                  value: grade,
+                  label: grade.name(context),
+                );
+              }).toList(),
             ),
             const Gap(16.0),
             Align(
@@ -288,20 +294,21 @@ class OrderLessonDurationPage extends StatelessWidget {
           children: <Widget>[
             Text(AppLocalizations.of(context)!.selectDuration),
             const SizedBox(height: 16),
-            DropdownButton<int>(
-              value: initialDuration,
-              items: [
-                DropdownMenuItem(value: 30, child: Text(AppLocalizations.of(context)!.minutes(30))),
-                DropdownMenuItem(value: 60, child: Text(AppLocalizations.of(context)!.hours(1))),
-                DropdownMenuItem(value: 90, child: Text(AppLocalizations.of(context)!.hours(1.5))),
-                DropdownMenuItem(value: 120, child: Text(AppLocalizations.of(context)!.hours(2))),
-                DropdownMenuItem(value: 180, child: Text(AppLocalizations.of(context)!.hours(3))),
-              ],
-              onChanged: (int? newValue) {
+            DropdownMenu<int>(
+              initialSelection: initialDuration,
+              hintText: AppLocalizations.of(context)!.selectDuration,
+              onSelected: (int? newValue) {
                 if (newValue != null) {
                   onDurationSelected(newValue);
                 }
               },
+              dropdownMenuEntries: [
+                DropdownMenuEntry<int>(value: 30, label: AppLocalizations.of(context)!.minutes(30)),
+                DropdownMenuEntry<int>(value: 60, label: AppLocalizations.of(context)!.hours(1)),
+                DropdownMenuEntry<int>(value: 90, label: AppLocalizations.of(context)!.hours(1.5)),
+                DropdownMenuEntry<int>(value: 120, label: AppLocalizations.of(context)!.hours(2)),
+                DropdownMenuEntry<int>(value: 180, label: AppLocalizations.of(context)!.hours(3)),
+              ],
             ),
             const Gap(16),
             ElevatedButton(
