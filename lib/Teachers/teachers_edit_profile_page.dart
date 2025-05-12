@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
+import 'package:supreme_octo_eureka/Widgets/contact.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -70,6 +72,10 @@ class EditTeacherProfilePage extends StatelessWidget {
                 labelText: AppLocalizations.of(context)!.username,
                 border: const OutlineInputBorder(),
               ),
+              keyboardType: TextInputType.text,
+              inputFormatters: <TextInputFormatter>[
+                FilteringTextInputFormatter.allow(RegExp(r'[\p{L} ]', unicode: true)),
+              ],
               onChanged: (value) {
                 newName.value = value;
                 checkIfChanged(appState);
@@ -136,6 +142,21 @@ class EditTeacherProfilePage extends StatelessWidget {
                 AppLocalizations.of(context)!.logout,
                 style: TextStyle(color: appState.themeData.colorScheme.onErrorContainer),
               ),
+            ),
+            const Gap(16),
+            ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(Colors.transparent),
+                foregroundColor: WidgetStateProperty.all(appState.themeData.colorScheme.errorContainer),
+                side: WidgetStateProperty.all(BorderSide(color: appState.themeData.colorScheme.errorContainer)),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ContactPage()),
+                );
+              },
+              child: const Text('Request Account Deletion'), // TODO: localize this
             ),
           ],
         ),

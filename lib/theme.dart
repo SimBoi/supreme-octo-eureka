@@ -1,6 +1,20 @@
 import "package:flutter/material.dart";
 
-// http://material-foundation.github.io/material-theme-builder?primary=%23BD93F9&secondary=%2350FA7B&tertiary=%23FF79C6&error=%23FF5555&colorMatch=true
+class Dracula {
+  static const Color background = Color(0xFF282A36);
+  static const Color currentLine = Color(0xFF44475A);
+  static const Color foreground = Color(0xFFF8F8F2);
+  static const Color comment = Color(0xFF6272A4);
+  static const Color cyan = Color(0xFF8BE9FD);
+  static const Color green = Color(0xFF50FA7B);
+  static const Color orange = Color(0xFFFFB86C);
+  static const Color pink = Color(0xFFFF79C6);
+  static const Color purple = Color(0xFFBD93F9);
+  static const Color red = Color(0xFFFF5555);
+  static const Color yellow = Color(0xFFF1FA8C);
+}
+
+// https://material-foundation.github.io/material-theme-builder/?primary=%23BD93F9&secondary=%2350FA7B&tertiary=%23FF79C6&error=%23FF5555&neutral=%23282A36&neutralVariant=%2344475A&custom%3AForeground=%23F8F8F2&custom%3AComment=%236272A4&custom%3ACyan=%238BE9FD&custom%3AOrange=%23FFB86C&custom%3AYellow=%23F1FA8C&colorMatch=true
 class MaterialTheme {
   final TextTheme textTheme;
 

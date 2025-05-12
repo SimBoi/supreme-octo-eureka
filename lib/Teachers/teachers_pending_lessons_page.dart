@@ -113,25 +113,30 @@ class _PendingLessonsPageState extends State<PendingLessonsPage> {
               ),
             ),
             const Gap(16),
-            Row(
+            Wrap(
+              runSpacing: 16,
               children: [
-                DropdownMenu<Grade>(
-                  initialSelection: _minGradeFilter,
-                  label: Text(AppLocalizations.of(context)!.fromGrade),
-                  onSelected: (value) {
-                    _minGradeFilter = value ?? Grade.any;
-                    _applyFilters();
-                  },
-                  dropdownMenuEntries: Grade.values.map((grade) {
-                    return DropdownMenuEntry(
-                      value: grade,
-                      label: grade.name(context),
-                    );
-                  }).toList(),
+                Row(
+                  children: [
+                    DropdownMenu<Grade>(
+                      initialSelection: _minGradeFilter,
+                      label: Text(AppLocalizations.of(context)!.fromGrade),
+                      onSelected: (value) {
+                        _minGradeFilter = value ?? Grade.any;
+                        _applyFilters();
+                      },
+                      dropdownMenuEntries: Grade.values.map((grade) {
+                        return DropdownMenuEntry(
+                          value: grade,
+                          label: grade.name(context),
+                        );
+                      }).toList(),
+                    ),
+                    const Gap(4),
+                    const Text('-'),
+                    const Gap(4),
+                  ],
                 ),
-                const Gap(4),
-                const Text('-'),
-                const Gap(4),
                 DropdownMenu<Grade>(
                   initialSelection: _maxGradeFilter,
                   label: Text(AppLocalizations.of(context)!.toGrade),
@@ -162,6 +167,17 @@ class _PendingLessonsPageState extends State<PendingLessonsPage> {
                                   LessonCard(
                                     lesson: lesson,
                                     isCustomer: false,
+                                    viewOnly: false,
+                                    onAcceptPressed: (result) {
+                                      _refreshPendingLessons(appState);
+                                      if (result == true && lesson.isImmediate) {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) => LiveLessonWaitingPage(lesson: lesson),
+                                          ),
+                                        );
+                                      }
+                                    },
                                   ),
                                   const Gap(16),
                                 ],

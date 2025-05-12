@@ -28,6 +28,13 @@ Future<void> saveCredentials(String newPhone, String newPassword) async {
 }
 
 Future<String> getAccountType(String phone, AppState appState) async {
+  appState.startLoading();
+  var result = await _getAccountType(phone, appState);
+  appState.stopLoading();
+  return result;
+}
+
+Future<String> _getAccountType(String phone, AppState appState) async {
   if (phone == '') {
     appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.phoneRequired);
     return 'ERROR';
@@ -70,6 +77,13 @@ Future<String> getAccountType(String phone, AppState appState) async {
 }
 
 Future<bool> login(String phone, String password, AppState appState) async {
+  appState.startLoading();
+  var result = await _login(phone, password, appState);
+  appState.stopLoading();
+  return result;
+}
+
+Future<bool> _login(String phone, String password, AppState appState) async {
   // check if phone or password are empty
   if (phone == '' || password == '') {
     appState.showErrorSnackBar('Phone number and password are required!');
@@ -109,7 +123,7 @@ Future<bool> login(String phone, String password, AppState appState) async {
           orders: Order.fromJsonArray(jsonResponse['Orders']),
         );
 
-        await loginOneSignal(appState.currentCustomer!.id.toString());
+        await _loginOneSignal(appState.currentCustomer!.id.toString());
 
         return true;
       } else if (jsonResponse['Result'] == 'TEACHER') {
@@ -124,7 +138,7 @@ Future<bool> login(String phone, String password, AppState appState) async {
           currentAppointments: Lesson.fromJsonArray(jsonResponse['CurrentAppointments']),
         );
 
-        await loginOneSignal(appState.currentTeacher!.id.toString());
+        await _loginOneSignal(appState.currentTeacher!.id.toString());
 
         return true;
       } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST') {
@@ -149,7 +163,7 @@ Future<bool> login(String phone, String password, AppState appState) async {
   return false;
 }
 
-Future<void> loginOneSignal(String externalID, {int timeout = 2000}) async {
+Future<void> _loginOneSignal(String externalID, {int timeout = 2000}) async {
   // check if OneSignal is available on this platform
   if (defaultTargetPlatform != TargetPlatform.iOS && defaultTargetPlatform != TargetPlatform.android) {
     return;
@@ -175,13 +189,13 @@ Future<void> logout(AppState appState) async {
   appState.currentCustomer = null;
   appState.currentTeacher = null;
 
-  await logoutOneSignal();
+  await _logoutOneSignal();
 
   // remove all routes and push the login page
   appState.navigatorKey.currentState!.pushNamedAndRemoveUntil('/', (route) => false);
 }
 
-Future<void> logoutOneSignal() async {
+Future<void> _logoutOneSignal() async {
   // check if OneSignal is available on this platform
   if (defaultTargetPlatform != TargetPlatform.iOS && defaultTargetPlatform != TargetPlatform.android) {
     return;
@@ -191,6 +205,13 @@ Future<void> logoutOneSignal() async {
 }
 
 Future<bool> signup(String phone, String username, AppState appState) async {
+  appState.startLoading();
+  var result = await _signup(phone, username, appState);
+  appState.stopLoading();
+  return result;
+}
+
+Future<bool> _signup(String phone, String username, AppState appState) async {
   if (phone == '') {
     appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.phoneRequired);
     return false;
@@ -258,6 +279,17 @@ Future<
       bool,
       int
     )> requestVerification(String phone, AppState appState) async {
+  appState.startLoading();
+  var result = await _requestVerification(phone, appState);
+  appState.stopLoading();
+  return result;
+}
+
+Future<
+    (
+      bool,
+      int
+    )> _requestVerification(String phone, AppState appState) async {
   var response = await appState.dbRequest(
     body: {
       'Action': 'RequestVerificationCode',
@@ -312,6 +344,13 @@ Future<
 }
 
 Future<bool> verifyPhone(String phone, String verificationCode, AppState appState) async {
+  appState.startLoading();
+  var result = await _verifyPhone(phone, verificationCode, appState);
+  appState.stopLoading();
+  return result;
+}
+
+Future<bool> _verifyPhone(String phone, String verificationCode, AppState appState) async {
   var response = await appState.dbRequest(
     body: {
       'Action': 'VerifyPhone',

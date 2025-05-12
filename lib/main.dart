@@ -36,7 +36,8 @@ class MyApp extends StatelessWidget {
     final brightness = View.of(context).platformDispatcher.platformBrightness;
     TextTheme textTheme = Theme.of(context).textTheme;
     MaterialTheme theme = MaterialTheme(textTheme);
-    appState.themeData = brightness == Brightness.light ? theme.light() : theme.dark();
+    // appState.themeData = brightness == Brightness.light ? theme.light() : theme.dark();
+    appState.themeData = theme.dark(); // Default to dark theme for now, TODO: Implement light theme
 
     return ChangeNotifierProvider(
       create: (context) => appState,

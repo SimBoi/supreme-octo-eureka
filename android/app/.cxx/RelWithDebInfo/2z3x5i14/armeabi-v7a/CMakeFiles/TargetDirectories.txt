@@ -1,0 +1,2 @@
+Q:/supreme-octo-eureka/android/app/.cxx/RelWithDebInfo/2z3x5i14/armeabi-v7a/CMakeFiles/edit_cache.dir
+Q:/supreme-octo-eureka/android/app/.cxx/RelWithDebInfo/2z3x5i14/armeabi-v7a/CMakeFiles/rebuild_cache.dir

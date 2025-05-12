@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:supreme_octo_eureka/Widgets/legal.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
+import 'package:supreme_octo_eureka/authentication/auth_logic.dart';
 import 'package:supreme_octo_eureka/booking_logic.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -16,10 +19,12 @@ class OrderLessonPage extends StatefulWidget {
 class _OrderLessonPageState extends State<OrderLessonPage> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  final int _pagesCount = 5;
 
-  String _title = '';
+  final TextEditingController _titleController = TextEditingController(text: '');
   Subject? _subject;
   Grade? _grade;
+  bool _isImmediate = false;
   DateTime _dateTime = DateTime.now().subtract(Duration(seconds: DateTime.now().second, milliseconds: DateTime.now().millisecond, microseconds: DateTime.now().microsecond)).add(const Duration(minutes: 60));
   int _duration = 60;
 
@@ -29,9 +34,11 @@ class _OrderLessonPageState extends State<OrderLessonPage> {
     super.dispose();
   }
 
-  void _nextPage() {
-    if (_currentPage < 3) {
-      _pageController.nextPage(
+  void _animateToPage(int offset) {
+    int newPage = _currentPage + offset;
+    if (newPage >= 0 && newPage < _pagesCount) {
+      _pageController.animateToPage(
+        newPage,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
@@ -49,11 +56,16 @@ class _OrderLessonPageState extends State<OrderLessonPage> {
     });
   }
 
-  void _setDetails(String title, Subject? subject, Grade? grade) {
+  void _setDetails(Subject? subject, Grade? grade) {
     setState(() {
-      _title = title;
       _subject = subject;
       _grade = grade;
+    });
+  }
+
+  void _setType(bool isImmediate) {
+    setState(() {
+      _isImmediate = isImmediate;
     });
   }
 
@@ -76,7 +88,15 @@ class _OrderLessonPageState extends State<OrderLessonPage> {
       onPopInvoked: (didPop) {
         if (didPop) return;
 
-        if (_currentPage > 0) {
+        if (_currentPage == 3) {
+          // if currently on duration page then go back to type page
+          _pageController.animateToPage(
+            1,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        } else if (_currentPage > 0) {
+          // otherwise go back 1 page
           _pageController.previousPage(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
@@ -97,25 +117,30 @@ class _OrderLessonPageState extends State<OrderLessonPage> {
           children: <Widget>[
             OrderLessonDetailsPage(
               onDetailsSelected: _setDetails,
-              nextPage: _nextPage,
-              initialTitle: _title,
+              animateToPage: _animateToPage,
+              titleController: _titleController,
               initialSubject: _subject,
               initialGrade: _grade,
             ),
+            OrderLessonTypePage(
+              onTypeSelected: _setType,
+              animateToPage: _animateToPage,
+            ),
             OrderLessonDateTimePage(
               onDateTimeSelected: _setDateTime,
-              nextPage: _nextPage,
+              animateToPage: _animateToPage,
               initialDateTime: _dateTime,
             ),
             OrderLessonDurationPage(
               onDurationSelected: _setDuration,
-              nextPage: _nextPage,
+              animateToPage: _animateToPage,
               initialDuration: _duration,
             ),
             OrderLessonConfirmationPage(
-              title: _title,
+              title: _titleController.text,
               subject: _subject,
               grade: _grade,
+              isImmediate: _isImmediate,
               dateTime: _dateTime,
               duration: _duration,
             ),
@@ -127,24 +152,23 @@ class _OrderLessonPageState extends State<OrderLessonPage> {
 }
 
 class OrderLessonDetailsPage extends StatelessWidget {
-  final Function(String, Subject?, Grade?) onDetailsSelected;
-  final VoidCallback nextPage;
-  final String initialTitle;
+  final Function(Subject?, Grade?) onDetailsSelected;
+  final Function(int offset) animateToPage;
+  final TextEditingController? titleController;
   final Subject? initialSubject;
   final Grade? initialGrade;
 
   const OrderLessonDetailsPage({
     super.key,
     required this.onDetailsSelected,
-    required this.nextPage,
-    this.initialTitle = '',
+    required this.animateToPage,
+    this.titleController,
     this.initialSubject,
     this.initialGrade,
   });
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController controller = TextEditingController(text: initialTitle);
     Subject? subject = initialSubject;
     Grade? grade = initialGrade;
     AppState appState = context.read<AppState>();
@@ -156,7 +180,11 @@ class OrderLessonDetailsPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             TextField(
-              controller: controller,
+              controller: titleController,
+              // only allow letters, numbers, spaces and punctuation. TODO: remove this restriction
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[\p{L}0-9 .,!?]', unicode: true)),
+              ],
               maxLines: null,
               decoration: InputDecoration(
                 labelText: AppLocalizations.of(context)!.title,
@@ -170,7 +198,7 @@ class OrderLessonDetailsPage extends StatelessWidget {
               onSelected: (Subject? newValue) {
                 if (newValue != null) {
                   subject = newValue;
-                  onDetailsSelected(controller.text, subject, grade);
+                  onDetailsSelected(subject, grade);
                 }
               },
               dropdownMenuEntries: Subject.values.skip(1).map((Subject subject) {
@@ -187,7 +215,7 @@ class OrderLessonDetailsPage extends StatelessWidget {
               onSelected: (Grade? newValue) {
                 if (newValue != null) {
                   grade = newValue;
-                  onDetailsSelected(controller.text, subject, grade);
+                  onDetailsSelected(subject, grade);
                 }
               },
               dropdownMenuEntries: Grade.values.skip(1).map((Grade grade) {
@@ -202,14 +230,21 @@ class OrderLessonDetailsPage extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: ElevatedButton(
                 onPressed: () {
-                  onDetailsSelected(controller.text, subject, grade);
-                  if (controller.text.isNotEmpty && subject != null && grade != null) {
-                    nextPage();
+                  onDetailsSelected(subject, grade);
+                  if (titleController!.text.isNotEmpty && subject != null && grade != null) {
+                    animateToPage(1);
                   } else {
                     appState.showErrorSnackBar(AppLocalizations.of(context)!.titleCannotBeEmpty);
                   }
                 },
-                child: const Icon(Icons.arrow_forward),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(AppLocalizations.of(context)!.next),
+                    const Gap(8.0),
+                    const Icon(Icons.arrow_forward),
+                  ],
+                ),
               ),
             ),
           ],
@@ -219,15 +254,62 @@ class OrderLessonDetailsPage extends StatelessWidget {
   }
 }
 
+// a page with two buttons: one for immediate lessons that navigates to the duration page and one for scheduled lessons that navigates to the date time page
+class OrderLessonTypePage extends StatelessWidget {
+  final Function(bool isImmediate) onTypeSelected;
+  final Function(int offset) animateToPage;
+
+  const OrderLessonTypePage({
+    super.key,
+    required this.onTypeSelected,
+    required this.animateToPage,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            // Text(AppLocalizations.of(context)!.orderLessonType), // TODO: localize
+            const Text("Please select the type of lesson you want to order"),
+            const Gap(16.0),
+            ElevatedButton(
+              onPressed: () {
+                onTypeSelected(true);
+                animateToPage(2);
+              },
+              // child: Text(AppLocalizations.of(context)!.immediateLesson), // TODO: localize
+              child: const Text("Get a lesson right now"),
+            ),
+            const Gap(16.0),
+            ElevatedButton(
+              onPressed: () {
+                onTypeSelected(false);
+                animateToPage(1);
+              },
+              // child: Text(AppLocalizations.of(context)!.scheduledLesson), // TODO: localize
+              child: const Text("Schedule a lesson for a later time (Recommended)"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// TODO: dont allow times between 00:00 and 08:00
 class OrderLessonDateTimePage extends StatelessWidget {
   final Function(DateTime) onDateTimeSelected;
-  final VoidCallback nextPage;
+  final Function(int offset) animateToPage;
   final DateTime initialDateTime;
 
   const OrderLessonDateTimePage({
     super.key,
     required this.onDateTimeSelected,
-    required this.nextPage,
+    required this.animateToPage,
     required this.initialDateTime,
   });
 
@@ -243,11 +325,13 @@ class OrderLessonDateTimePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             OmniDateTimePicker(
-              firstDate: DateTime.now().subtract(Duration(seconds: DateTime.now().second, milliseconds: DateTime.now().millisecond, microseconds: DateTime.now().microsecond)).add(const Duration(minutes: 30)),
               initialDate: initialDateTime,
+              firstDate: DateTime.now().subtract(Duration(seconds: DateTime.now().second, milliseconds: DateTime.now().millisecond, microseconds: DateTime.now().microsecond)).add(const Duration(minutes: 30)),
               onDateTimeChanged: (DateTime dateTime) {
                 selectedDateTime = dateTime;
               },
+              minutesInterval: 5,
+              is24HourMode: true,
             ),
             const Gap(16.0),
             Align(
@@ -255,14 +339,20 @@ class OrderLessonDateTimePage extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {
                   onDateTimeSelected(selectedDateTime);
-                  if (selectedDateTime.isAfter(DateTime.now().add(const Duration(minutes: 30)))) {
-                    nextPage();
+                  if (selectedDateTime.isAfter(DateTime.now().add(const Duration(minutes: 18)))) {
+                    animateToPage(1);
                   } else {
-                    // appState.showErrorSnackBar('Date and time must be more than {30} minutes in the future');
-                    appState.showErrorSnackBar(AppLocalizations.of(context)!.dateTimeMustBeInTheFuture(30));
+                    appState.showErrorSnackBar(AppLocalizations.of(context)!.dateTimeMustBeInTheFuture(20));
                   }
                 },
-                child: const Icon(Icons.arrow_forward),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(AppLocalizations.of(context)!.next),
+                    const Gap(8.0),
+                    const Icon(Icons.arrow_forward),
+                  ],
+                ),
               ),
             ),
           ],
@@ -274,13 +364,13 @@ class OrderLessonDateTimePage extends StatelessWidget {
 
 class OrderLessonDurationPage extends StatelessWidget {
   final Function(int) onDurationSelected;
-  final VoidCallback nextPage;
+  final Function(int offset) animateToPage;
   final int initialDuration;
 
   const OrderLessonDurationPage({
     super.key,
     required this.onDurationSelected,
-    required this.nextPage,
+    required this.animateToPage,
     this.initialDuration = 60,
   });
 
@@ -303,7 +393,9 @@ class OrderLessonDurationPage extends StatelessWidget {
                 }
               },
               dropdownMenuEntries: [
+                DropdownMenuEntry<int>(value: 15, label: AppLocalizations.of(context)!.minutes(15)),
                 DropdownMenuEntry<int>(value: 30, label: AppLocalizations.of(context)!.minutes(30)),
+                DropdownMenuEntry<int>(value: 45, label: AppLocalizations.of(context)!.minutes(45)),
                 DropdownMenuEntry<int>(value: 60, label: AppLocalizations.of(context)!.hours(1)),
                 DropdownMenuEntry<int>(value: 90, label: AppLocalizations.of(context)!.hours(1.5)),
                 DropdownMenuEntry<int>(value: 120, label: AppLocalizations.of(context)!.hours(2)),
@@ -313,9 +405,16 @@ class OrderLessonDurationPage extends StatelessWidget {
             const Gap(16),
             ElevatedButton(
               onPressed: () {
-                nextPage();
+                animateToPage(1);
               },
-              child: const Icon(Icons.arrow_forward),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(AppLocalizations.of(context)!.next),
+                  const Gap(8.0),
+                  const Icon(Icons.arrow_forward),
+                ],
+              ),
             ),
           ],
         ),
@@ -324,10 +423,11 @@ class OrderLessonDurationPage extends StatelessWidget {
   }
 }
 
-class OrderLessonConfirmationPage extends StatelessWidget {
+class OrderLessonConfirmationPage extends StatefulWidget {
   final String title;
   final Subject? subject;
   final Grade? grade;
+  final bool isImmediate;
   final DateTime dateTime;
   final int duration;
 
@@ -336,77 +436,190 @@ class OrderLessonConfirmationPage extends StatelessWidget {
     required this.title,
     required this.subject,
     required this.grade,
+    required this.isImmediate,
     required this.dateTime,
     required this.duration,
   });
 
   @override
+  State<OrderLessonConfirmationPage> createState() => _OrderLessonConfirmationPageState();
+}
+
+class _OrderLessonConfirmationPageState extends State<OrderLessonConfirmationPage> {
+  final TextEditingController couponController = TextEditingController();
+  double? newPrice;
+
+  @override
+  void dispose() {
+    couponController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    AppState appState = context.read<AppState>();
+    ThemeData theme = Theme.of(context);
+    double originalPrice = appState.getLessonPrice(widget.duration);
+    double displayPrice = newPrice ?? originalPrice;
+
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 40.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            IntrinsicWidth(
-              child: Card.outlined(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.topic),
-                          const Gap(8),
-                          Text(title),
-                        ],
-                      ),
-                      const Gap(16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.subject),
-                          const Gap(8),
-                          Text(subject!.name(context)),
-                        ],
-                      ),
-                      const Gap(16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.school),
-                          const Gap(8),
-                          Text(grade!.name(context)),
-                        ],
-                      ),
-                      const Gap(16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.calendar_today),
-                          const Gap(8),
-                          Text('${dateTime.day}/${dateTime.month} ${dateTime.hour % 12 == 0 ? 12 : dateTime.hour % 12}:${dateTime.minute.toString().padLeft(2, '0')} ${dateTime.hour >= 12 ? 'PM' : 'AM'}'),
-                        ],
-                      ),
-                      const Gap(16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.access_time),
-                          const Gap(8),
-                          if (duration >= 60) Text('${(duration / 60).toStringAsFixed((duration % 60 == 0) ? 0 : 1)} hours') else Text(AppLocalizations.of(context)!.minutes(duration)),
-                        ],
-                      ),
-                    ],
-                  ),
+            // Order Summary Card
+            Card.outlined(
+              shape: RoundedRectangleBorder(
+                side: BorderSide(color: theme.colorScheme.onSurface),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.orderSummary,
+                      style: theme.textTheme.headlineMedium,
+                    ),
+                    const Gap(16),
+                    Row(
+                      children: [
+                        const Icon(Icons.topic),
+                        const Gap(8),
+                        Text(widget.title),
+                      ],
+                    ),
+                    const Gap(16),
+                    Row(
+                      children: [
+                        const Icon(Icons.subject),
+                        const Gap(8),
+                        Text(widget.subject!.name(context)),
+                      ],
+                    ),
+                    const Gap(16),
+                    Row(
+                      children: [
+                        const Icon(Icons.school),
+                        const Gap(8),
+                        Text(widget.grade!.name(context)),
+                      ],
+                    ),
+                    const Gap(16),
+                    Row(
+                      children: [
+                        const Icon(Icons.calendar_today),
+                        const Gap(8),
+                        widget.isImmediate ? const Text("Live Lesson") : Text(Lesson.getDateTimeString(context, widget.dateTime.millisecondsSinceEpoch ~/ 1000)), // TODO: localize
+                      ],
+                    ),
+                    const Gap(16),
+                    Row(
+                      children: [
+                        const Icon(Icons.access_time),
+                        const Gap(8),
+                        Text(Lesson.getDurationString(context, widget.duration)),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
             const Gap(16),
+            // Coupon Code Card
+            Card.outlined(
+              shape: RoundedRectangleBorder(
+                side: BorderSide(color: theme.colorScheme.onSurface),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.discount),
+                        const Gap(8),
+                        // Coupon code text field linked to a controller
+                        Expanded(
+                          child: TextField(
+                            controller: couponController,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(RegExp(r'[\p{L}0-9]', unicode: true)),
+                            ],
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!.couponCode,
+                              border: const OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                        const Gap(8),
+                        ElevatedButton(
+                          onPressed: () async {
+                            // Read coupon code from the text field
+                            String couponCode = couponController.text;
+                            double updatedPrice = await testCoupon(couponCode, originalPrice, appState);
+                            setState(() {
+                              newPrice = updatedPrice < 0 ? null : updatedPrice;
+                            });
+                          },
+                          child: Text(AppLocalizations.of(context)!.apply),
+                        ),
+                      ],
+                    ),
+                    const Gap(8),
+                    const Divider(),
+                    const Gap(8),
+                    Row(
+                      children: [
+                        const Icon(Icons.monetization_on),
+                        const Gap(8),
+                        if (newPrice != null) ...[
+                          Text(
+                            '$originalPrice₪',
+                            style: TextStyle(
+                              decoration: TextDecoration.lineThrough,
+                              decorationColor: theme.colorScheme.error,
+                              decorationThickness: 2,
+                              color: theme.colorScheme.error,
+                            ),
+                          ),
+                          const Gap(8),
+                        ] else
+                          ...[],
+                        Text('$displayPrice₪'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const Gap(16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(AppLocalizations.of(context)!.agreeRefundPolicy1),
+                InkWell(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const LegalPage()),
+                    );
+                  },
+                  child: Text(
+                    AppLocalizations.of(context)!.agreeRefundPolicy2,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.primary,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const Gap(16),
             ElevatedButton(
               onPressed: () async {
-                AppState appState = context.read<AppState>();
                 Lesson lesson = Lesson(
                   orderID: 0,
                   studentID: appState.currentCustomer!.id,
@@ -415,15 +628,19 @@ class OrderLessonConfirmationPage extends StatelessWidget {
                   teacherID: 0,
                   teacherName: '',
                   teacherPhone: '',
-                  title: title,
-                  subject: subject!,
-                  grade: grade!,
-                  startTimestamp: dateTime.millisecondsSinceEpoch ~/ 1000,
-                  durationMinutes: duration,
+                  title: widget.title,
+                  subject: widget.subject!,
+                  grade: widget.grade!,
+                  isImmediate: widget.isImmediate,
+                  startTimestamp: widget.dateTime.millisecondsSinceEpoch ~/ 1000,
+                  durationMinutes: widget.duration,
                   isPending: true,
                   link: '',
                 );
-                String? success = await createOrderRequest(lesson, appState);
+                String? success = await createOrderRequest(
+                    lesson,
+                    couponController.text, // TODO: use last applied coupon
+                    appState);
                 if (success != null) {
                   if (context.mounted) {
                     Navigator.of(context)
@@ -432,7 +649,7 @@ class OrderLessonConfirmationPage extends StatelessWidget {
                   }
                 }
               },
-              child: Text(AppLocalizations.of(context)!.confirmAndPay),
+              child: Text(AppLocalizations.of(context)!.confirmAndPay), // TODO: change text back to "Confirm and proceed to payment"
             ),
           ],
         ),
@@ -453,7 +670,13 @@ class OrderLessonPaymentPage extends StatelessWidget {
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) {
-        if (didPop) return;
+        if (didPop) {
+          Future.delayed(Duration.zero, () {
+            login(appState.currentCustomer!.phone, appState.currentCustomer!.password, appState);
+          });
+          return;
+        }
+
         appState.showAlertDialog(
           content: Text(AppLocalizations.of(context)!.confirmLeavePaymentPage),
           actions: [
@@ -476,14 +699,14 @@ class OrderLessonPaymentPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Text('Payment Page for ${lesson.title}, id: ${lesson.orderID}'),
+              Text('Lesson: ${lesson.title}, id: ${lesson.orderID}, After confirming, a teacher will be assigned to you and will contact you via WhatsApp.'),
               ElevatedButton(
                 onPressed: () async {
                   if (await confirmOrder(lesson, appState) && context.mounted) {
                     Navigator.of(context).pop();
                   }
                 },
-                child: const Text('Confirm Payment'),
+                child: const Text('Confirm and send order'),
               ),
             ],
           ),

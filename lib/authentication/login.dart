@@ -24,10 +24,11 @@ class LoginPage extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const AspectRatio(
-              aspectRatio: 1,
-              child: Placeholder(),
-            ),
+            // const AspectRatio(
+            //   aspectRatio: 1,
+            //   child: Placeholder(),
+            // ),
+            const Gap(120),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
               child: Column(

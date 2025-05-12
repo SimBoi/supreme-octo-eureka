@@ -1,3 +1,4 @@
+import 'package:supreme_octo_eureka/Widgets/Legal.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
 import 'package:supreme_octo_eureka/authentication/auth_logic.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ class SingUpPage extends StatelessWidget {
     text: '05',
   );
   final TextEditingController _usernameController = TextEditingController();
+  final ValueNotifier<bool> agreedNotifier = ValueNotifier(false);
 
   @override
   Widget build(BuildContext context) {
@@ -24,10 +26,11 @@ class SingUpPage extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const AspectRatio(
-              aspectRatio: 1,
-              child: Placeholder(),
-            ),
+            // const AspectRatio(
+            //   aspectRatio: 1,
+            //   child: Placeholder(),
+            // ),
+            const Gap(120),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
               child: Column(
@@ -74,16 +77,8 @@ class SingUpPage extends StatelessWidget {
                       controller: _usernameController,
                       keyboardType: TextInputType.text,
                       inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.allow(RegExp("[a-zA-Zs]")),
+                        FilteringTextInputFormatter.allow(RegExp(r'[\p{L} ]', unicode: true)),
                       ],
-                      onChanged: (value) {
-                        if (!RegExp(r'^[a-zA-Z\s]*$').hasMatch(value)) {
-                          // If the user tries to enter a non-letter or non-space character, reset the value
-                          _usernameController.text = value.replaceAll(RegExp(r'[^a-zA-Z\s]'), '');
-                          // Move the cursor to the end of the text
-                          _usernameController.selection = TextSelection.fromPosition(TextPosition(offset: _usernameController.text.length));
-                        }
-                      },
                       decoration: InputDecoration(
                         border: const OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -91,6 +86,39 @@ class SingUpPage extends StatelessWidget {
                         labelText: AppLocalizations.of(context)!.username,
                       ),
                     ),
+                  ),
+                  const Gap(16),
+                  ValueListenableBuilder<bool>(
+                    valueListenable: agreedNotifier,
+                    builder: (context, agreed, child) {
+                      return CheckboxListTile(
+                        controlAffinity: ListTileControlAffinity.leading,
+                        contentPadding: EdgeInsets.zero,
+                        title: Row(
+                          children: [
+                            Text(AppLocalizations.of(context)!.agreeTerms1),
+                            InkWell(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (_) => const LegalPage()),
+                                );
+                              },
+                              child: Text(
+                                AppLocalizations.of(context)!.agreeTerms2,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.primary,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        value: agreed,
+                        onChanged: (value) {
+                          agreedNotifier.value = value ?? false;
+                        },
+                      );
+                    },
                   ),
                   const Gap(16),
                   SizedBox(
@@ -153,6 +181,11 @@ class SingUpPage extends StatelessWidget {
   void _onSignUpButtonPressed(BuildContext context, AppState appState) async {
     var phone = _phoneController.text;
     var username = _usernameController.text;
+
+    if (agreedNotifier.value == false) {
+      appState.showErrorSnackBar(AppLocalizations.of(context)!.mustAgreeTerms);
+      return;
+    }
 
     bool result = await signup(phone, username, appState);
     if (result && context.mounted) {

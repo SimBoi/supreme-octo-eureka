@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -115,6 +116,7 @@ class Lesson {
   String title;
   Subject subject;
   Grade grade;
+  bool isImmediate;
   int startTimestamp;
   int durationMinutes;
   bool isPending;
@@ -131,48 +133,107 @@ class Lesson {
     required this.title,
     required this.subject,
     required this.grade,
+    required this.isImmediate,
     required this.startTimestamp,
     required this.durationMinutes,
     required this.isPending,
     required this.link,
   });
 
+  void copyFrom(Lesson lesson) {
+    orderID = lesson.orderID;
+    studentID = lesson.studentID;
+    studentName = lesson.studentName;
+    studentPhone = lesson.studentPhone;
+    teacherID = lesson.teacherID;
+    teacherName = lesson.teacherName;
+    teacherPhone = lesson.teacherPhone;
+    title = lesson.title;
+    subject = lesson.subject;
+    grade = lesson.grade;
+    isImmediate = lesson.isImmediate;
+    startTimestamp = lesson.startTimestamp;
+    durationMinutes = lesson.durationMinutes;
+    isPending = lesson.isPending;
+    link = lesson.link;
+  }
+
+  static Lesson fromDict(dynamic dictLesson) {
+    return Lesson(
+      orderID: dictLesson['OrderID'] as int,
+      studentID: dictLesson['StudentID'] as int,
+      studentName: dictLesson['StudentName'] as String,
+      studentPhone: dictLesson['StudentPhone'] as String,
+      teacherID: dictLesson['TeacherID'] as int,
+      teacherName: dictLesson['TeacherName'] as String,
+      teacherPhone: dictLesson['TeacherPhone'] as String,
+      title: dictLesson['Title'] as String,
+      subject: Subject.values[dictLesson['Subject'] as int],
+      grade: Grade.values[dictLesson['Grade'] as int],
+      isImmediate: dictLesson['IsImmediate'] as bool,
+      startTimestamp: dictLesson['StartTimestamp'] as int,
+      durationMinutes: dictLesson['DurationMinutes'] as int,
+      isPending: dictLesson['IsPending'] as bool,
+      link: dictLesson['Link'] as String,
+    );
+  }
+
+  static Lesson fromJson(dynamic jsonLesson) {
+    var dictLesson = json.decode(jsonLesson);
+    return Lesson.fromDict(dictLesson);
+  }
+
   static List<Lesson> fromJsonArray(dynamic jsonList) {
-    var jsonAppointments = json.decode(jsonList);
-    List<Lesson> lessons = [];
-    for (var jsonAppointment in jsonAppointments) {
-      lessons.add(Lesson(
-        orderID: jsonAppointment['OrderID'] as int,
-        studentID: jsonAppointment['StudentID'] as int,
-        studentName: jsonAppointment['StudentName'] as String,
-        studentPhone: jsonAppointment['StudentPhone'] as String,
-        teacherID: jsonAppointment['TeacherID'] as int,
-        teacherName: jsonAppointment['TeacherName'] as String,
-        teacherPhone: jsonAppointment['TeacherPhone'] as String,
-        title: jsonAppointment['Title'] as String,
-        subject: Subject.values[jsonAppointment['Subject'] as int],
-        grade: Grade.values[jsonAppointment['Grade'] as int],
-        startTimestamp: jsonAppointment['StartTimestamp'] as int,
-        durationMinutes: jsonAppointment['DurationMinutes'] as int,
-        isPending: jsonAppointment['IsPending'] as bool,
-        link: jsonAppointment['Link'] as String,
-      ));
-    }
+    var dictAppointments = json.decode(jsonList);
+    List<Lesson> lessons = dictAppointments.map<Lesson>((dictAppointment) => Lesson.fromDict(dictAppointment)).toList();
     return lessons;
+  }
+
+  static String getDurationString(BuildContext context, int durationMinutes) {
+    if (durationMinutes >= 60) {
+      return AppLocalizations.of(context)!.hours((durationMinutes / 60).toStringAsFixed((durationMinutes % 60 == 0) ? 0 : 1));
+    } else {
+      return AppLocalizations.of(context)!.minutes(durationMinutes.toString());
+    }
+  }
+
+  static String getDateTimeString(BuildContext context, int timestamp, {bool is24HourFormat = true, bool showDate = true, bool showTime = true}) {
+    DateTime lessonDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+    String output = '';
+
+    if (showDate) {
+      output += '${lessonDate.day}/${lessonDate.month} ';
+    }
+
+    if (showTime) {
+      if (is24HourFormat) {
+        output += '${lessonDate.hour.toString().padLeft(2, '0')}:${lessonDate.minute.toString().padLeft(2, '0')}';
+      } else {
+        output += '${lessonDate.hour % 12 == 0 ? 12 : lessonDate.hour % 12}:${lessonDate.minute.toString().padLeft(2, '0')} ${lessonDate.hour >= 12 ? 'PM' : 'AM'}';
+      }
+    }
+
+    return output;
   }
 }
 
 class Order {
   int id;
-  int timestamp;
+  int orderTimestamp;
   int durationMinutes;
+  bool isImmediate;
+  int lessonTimestamp;
+  int price;
   int status;
   String? receiptURL;
 
   Order({
     required this.id,
-    required this.timestamp,
+    required this.orderTimestamp,
     required this.durationMinutes,
+    required this.isImmediate,
+    required this.lessonTimestamp,
+    required this.price,
     required this.status,
     this.receiptURL,
   });
@@ -183,8 +244,11 @@ class Order {
     for (var jsonOrder in jsonOrders) {
       orders.add(Order(
         id: jsonOrder['OrderID'] as int,
-        timestamp: jsonOrder['OrderTimestamp'] as int,
+        orderTimestamp: jsonOrder['OrderTimestamp'] as int,
         durationMinutes: jsonOrder['DurationMinutes'] as int,
+        isImmediate: jsonOrder['IsImmediate'] as bool,
+        lessonTimestamp: jsonOrder['LessonTimestamp'] as int,
+        price: jsonOrder['Price'] as int,
         status: jsonOrder['Status'] as int,
         receiptURL: jsonOrder['ReceiptURL'] as String?,
       ));
@@ -236,7 +300,7 @@ class Teacher {
 }
 
 class AppState extends ChangeNotifier {
-  Uri uri = Uri.http('5.29.135.161:8000', '/supreme-octo-eureka-backend/handler.php');
+  Uri uri = Uri.https('api.darrisni.com', '/prod/handler.php');
   static const int verificationCodeLength = 6;
   late GlobalKey<NavigatorState> navigatorKey;
   late GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey;
@@ -245,14 +309,20 @@ class AppState extends ChangeNotifier {
   Customer? currentCustomer;
   Teacher? currentTeacher;
   String language = 'en';
-  bool isLoading = false;
+  int loadingCount = 0; // the number of loading events that are currently active
 
   // get the root scaffold context
   BuildContext? get rootContext => scaffoldMessengerKey.currentContext!;
 
   // Version for the lessons list to notify the UI when it changes
-  int _lessonsVersion = 0;
-  int get lessonsListVersion => _lessonsVersion;
+  int _lessonsListVersion = 0;
+  int get lessonsListVersion => _lessonsListVersion;
+  set lessonsListVersion(int version) {
+    if (_lessonsListVersion != version) {
+      _lessonsListVersion = version;
+      notifyListeners();
+    }
+  }
 
   void showSnackBar(SnackBar snackBar) {
     scaffoldMessengerKey.currentState?.showSnackBar(snackBar);
@@ -328,8 +398,8 @@ class AppState extends ChangeNotifier {
   }
 
   void startLoading() {
-    if (isLoading) return;
-    isLoading = true;
+    loadingCount++;
+    if (loadingCount > 1) return; // don't show loading dialog if already showing
     showDialog<void>(
       context: navigatorKey.currentContext!,
       barrierDismissible: false,
@@ -348,25 +418,32 @@ class AppState extends ChangeNotifier {
   }
 
   void stopLoading() {
-    if (!isLoading) return;
-    isLoading = false;
+    loadingCount--;
+    if (loadingCount > 0) return; // don't close dialog if still loading
+    if (loadingCount < 0) throw Exception('Loading count is negative!');
     navigatorKey.currentState?.pop();
   }
 
-  Future<http.Response> dbRequest({Map<String, String>? body, bool indicateLoading = true}) async {
+  Future<http.Response> dbRequest({Map<String, String>? body, bool indicateLoading = true, int timeout = 10}) async {
     if (indicateLoading) {
       startLoading();
     }
     http.Response response;
 
     try {
-      response = await http.post(
-        uri,
-        body: body,
-      );
+      response = await http
+          .post(
+            uri,
+            body: body,
+          )
+          .timeout(Duration(seconds: timeout));
       if (response.statusCode != 200) {
         showErrorSnackBar('${response.statusCode}: ${AppLocalizations.of(rootContext!)!.unexpectedError}');
       }
+    } on TimeoutException catch (e) {
+      response = http.Response(e.toString(), 408);
+      // showErrorSnackBar('${AppLocalizations.of(rootContext!)!.timeoutException}: ${e.message}'); // TODO: localize
+      showErrorSnackBar('Request timed out. Please try again later.');
     } on http.ClientException catch (e) {
       response = http.Response(e.message, 504);
       showErrorSnackBar('${AppLocalizations.of(rootContext!)!.clientException}: ${e.message}');
@@ -374,6 +451,12 @@ class AppState extends ChangeNotifier {
       response = http.Response(e.toString(), 400);
       showErrorSnackBar('${AppLocalizations.of(rootContext!)!.unexpectedException}: ${e.toString()}');
     }
+
+    print('==================================');
+    print('Request: $body');
+    print('----------------------------------');
+    print('Response: ${response.body}');
+    print('==================================');
 
     if (indicateLoading) {
       stopLoading();
@@ -395,34 +478,36 @@ class AppState extends ChangeNotifier {
     return accountType == AccountType.customer ? currentCustomer!.password : currentTeacher!.password;
   }
 
+  double getLessonPrice(int durationMinutes) {
+    return durationMinutes * 1; // rate per minute
+  }
+
   void addLesson(Lesson lesson) {
     if (accountType == AccountType.customer) {
       currentCustomer!.currentAppointments.add(lesson);
     } else {
       currentTeacher!.currentAppointments.add(lesson);
     }
-    _lessonsVersion++;
-    notifyListeners();
+    lessonsListVersion++;
   }
 
-  void updateLessonLink(int startTimestamp, String newLink) {
+  void copyLessonFrom(Lesson source) {
     if (accountType == AccountType.customer) {
-      for (var lesson in currentCustomer!.currentAppointments) {
-        if (lesson.startTimestamp == startTimestamp) {
-          lesson.link = newLink;
+      for (var i = 0; i < currentCustomer!.currentAppointments.length; i++) {
+        if (currentCustomer!.currentAppointments[i].orderID == source.orderID) {
+          currentCustomer!.currentAppointments[i].copyFrom(source);
           break;
         }
       }
     } else {
-      for (var lesson in currentTeacher!.currentAppointments) {
-        if (lesson.startTimestamp == startTimestamp) {
-          lesson.link = newLink;
+      for (var i = 0; i < currentTeacher!.currentAppointments.length; i++) {
+        if (currentTeacher!.currentAppointments[i].orderID == source.orderID) {
+          currentTeacher!.currentAppointments[i].copyFrom(source);
           break;
         }
       }
     }
-    _lessonsVersion++;
-    notifyListeners();
+    lessonsListVersion++;
   }
 
   void removeLesson(int startTimestamp, {int studentID = 0}) {
@@ -431,8 +516,7 @@ class AppState extends ChangeNotifier {
     } else {
       currentTeacher!.currentAppointments.removeWhere((lesson) => lesson.startTimestamp == startTimestamp && lesson.studentID == studentID);
     }
-    _lessonsVersion++;
-    notifyListeners();
+    lessonsListVersion++;
   }
 
   void updateProfile(String newUsername) {
