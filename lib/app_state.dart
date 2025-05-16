@@ -300,6 +300,14 @@ class Teacher {
 }
 
 class AppState extends ChangeNotifier {
+  AppLifecycleState _lifecycleState = WidgetsBinding.instance.lifecycleState ?? AppLifecycleState.resumed;
+  AppLifecycleState get lifecycleState => _lifecycleState;
+  set lifecycleState(AppLifecycleState state) {
+    if (_lifecycleState == state) return;
+    _lifecycleState = state;
+    notifyListeners();
+  }
+
   Uri uri = Uri.https('api.darrisni.com', '/prod/handler.php');
   static const int verificationCodeLength = 6;
   late GlobalKey<NavigatorState> navigatorKey;
@@ -318,10 +326,9 @@ class AppState extends ChangeNotifier {
   int _lessonsListVersion = 0;
   int get lessonsListVersion => _lessonsListVersion;
   set lessonsListVersion(int version) {
-    if (_lessonsListVersion != version) {
-      _lessonsListVersion = version;
-      notifyListeners();
-    }
+    if (_lessonsListVersion == version) return;
+    _lessonsListVersion = version;
+    notifyListeners();
   }
 
   void showSnackBar(SnackBar snackBar) {
@@ -404,14 +411,18 @@ class AppState extends ChangeNotifier {
       context: navigatorKey.currentContext!,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return const SimpleDialog(
-          elevation: 0.0,
-          backgroundColor: Colors.transparent,
-          children: <Widget>[
-            Center(
-              child: CircularProgressIndicator(),
-            )
-          ],
+        // TODO: test this
+        return const PopScope(
+          canPop: false,
+          child: SimpleDialog(
+            elevation: 0.0,
+            backgroundColor: Colors.transparent,
+            children: <Widget>[
+              Center(
+                child: CircularProgressIndicator(),
+              )
+            ],
+          ),
         );
       },
     );
@@ -424,14 +435,30 @@ class AppState extends ChangeNotifier {
     navigatorKey.currentState?.pop();
   }
 
-  Future<http.Response> dbRequest({Map<String, String>? body, bool indicateLoading = true, int timeout = 10}) async {
-    if (indicateLoading) {
-      startLoading();
+  Future<void> waitForForeground() {
+    if (_lifecycleState == AppLifecycleState.resumed) {
+      return Future.value();
     }
-    http.Response response;
+    final completer = Completer<void>();
+    void listener() {
+      if (_lifecycleState == AppLifecycleState.resumed) {
+        removeListener(listener);
+        completer.complete();
+      }
+    }
 
+    addListener(listener);
+    return completer.future;
+  }
+
+  Future<http.Response> dbRequest({Map<String, String>? body, bool indicateLoading = true, int timeout = 10}) async {
+    if (indicateLoading) startLoading();
+    await waitForForeground();
+
+    final client = http.Client();
+    http.Response response;
     try {
-      response = await http
+      response = await client
           .post(
             uri,
             body: body,
@@ -442,35 +469,44 @@ class AppState extends ChangeNotifier {
       }
     } on TimeoutException catch (e) {
       response = http.Response(e.toString(), 408);
-      // showErrorSnackBar('${AppLocalizations.of(rootContext!)!.timeoutException}: ${e.message}'); // TODO: localize
-      showErrorSnackBar('Request timed out. Please try again later.');
+      showErrorSnackBar(AppLocalizations.of(rootContext!)!.timeoutException);
     } on http.ClientException catch (e) {
       response = http.Response(e.message, 504);
       showErrorSnackBar('${AppLocalizations.of(rootContext!)!.clientException}: ${e.message}');
     } catch (e) {
       response = http.Response(e.toString(), 400);
       showErrorSnackBar('${AppLocalizations.of(rootContext!)!.unexpectedException}: ${e.toString()}');
+    } finally {
+      client.close();
+    }
+
+    // if the request failed while the app was in the background, retru once the app is in the foreground
+    if (response.statusCode != 200 && _lifecycleState != AppLifecycleState.resumed) {
+      await waitForForeground();
+      return dbRequest(body: body, indicateLoading: false, timeout: timeout);
     }
 
     print('==================================');
-    print('Request: $body');
+    print('Request: $body - app state: ${_lifecycleState.toString()}');
     print('----------------------------------');
     print('Response: ${response.body}');
     print('==================================');
 
-    if (indicateLoading) {
-      stopLoading();
-    }
+    if (indicateLoading) stopLoading();
     return response;
   }
 
-  String getPhoneLocalFormat() {
-    String phone = accountType == AccountType.customer ? currentCustomer!.phone : currentTeacher!.phone;
+  String getPhoneLocalFormat({String phone = ''}) {
+    if (phone.isEmpty) {
+      phone = accountType == AccountType.customer ? currentCustomer!.phone : currentTeacher!.phone;
+    }
     return phone.length == 10 ? phone : '0${phone.substring(3)}';
   }
 
-  String getPhoneInternationalFormat() {
-    String phone = accountType == AccountType.customer ? currentCustomer!.phone : currentTeacher!.phone;
+  String getPhoneInternationalFormat({String phone = ''}) {
+    if (phone.isEmpty) {
+      phone = accountType == AccountType.customer ? currentCustomer!.phone : currentTeacher!.phone;
+    }
     return phone.length == 10 ? '972${phone.substring(1)}' : phone;
   }
 
@@ -482,41 +518,32 @@ class AppState extends ChangeNotifier {
     return durationMinutes * 1; // rate per minute
   }
 
-  void addLesson(Lesson lesson) {
-    if (accountType == AccountType.customer) {
-      currentCustomer!.currentAppointments.add(lesson);
-    } else {
-      currentTeacher!.currentAppointments.add(lesson);
-    }
-    lessonsListVersion++;
+  void addLesson(Lesson lesson, {bool notifyListeners = true}) {
+    final appointments = accountType == AccountType.customer ? currentCustomer!.currentAppointments : currentTeacher!.currentAppointments;
+
+    appointments.add(lesson);
+    appointments.sort((a, b) {
+      if (a.isImmediate) return -1;
+      if (b.isImmediate) return 1;
+      return a.startTimestamp.compareTo(b.startTimestamp);
+    });
+    if (notifyListeners) lessonsListVersion++;
   }
 
-  void copyLessonFrom(Lesson source) {
-    if (accountType == AccountType.customer) {
-      for (var i = 0; i < currentCustomer!.currentAppointments.length; i++) {
-        if (currentCustomer!.currentAppointments[i].orderID == source.orderID) {
-          currentCustomer!.currentAppointments[i].copyFrom(source);
-          break;
-        }
-      }
-    } else {
-      for (var i = 0; i < currentTeacher!.currentAppointments.length; i++) {
-        if (currentTeacher!.currentAppointments[i].orderID == source.orderID) {
-          currentTeacher!.currentAppointments[i].copyFrom(source);
-          break;
-        }
-      }
-    }
-    lessonsListVersion++;
+  void copyLessonFrom(Lesson source, {bool notifyListeners = true}) {
+    final appointments = accountType == AccountType.customer ? currentCustomer!.currentAppointments : currentTeacher!.currentAppointments;
+    Lesson lesson = appointments.firstWhere((lesson) => lesson.orderID == source.orderID);
+
+    removeLesson(lesson.startTimestamp, studentID: lesson.studentID, notifyListeners: false);
+    lesson.copyFrom(source);
+    addLesson(lesson, notifyListeners: notifyListeners);
   }
 
-  void removeLesson(int startTimestamp, {int studentID = 0}) {
-    if (accountType == AccountType.customer) {
-      currentCustomer!.currentAppointments.removeWhere((lesson) => lesson.startTimestamp == startTimestamp);
-    } else {
-      currentTeacher!.currentAppointments.removeWhere((lesson) => lesson.startTimestamp == startTimestamp && lesson.studentID == studentID);
-    }
-    lessonsListVersion++;
+  void removeLesson(int startTimestamp, {int studentID = 0, bool notifyListeners = true}) {
+    final appointments = accountType == AccountType.customer ? currentCustomer!.currentAppointments : currentTeacher!.currentAppointments;
+
+    appointments.removeWhere((lesson) => lesson.startTimestamp == startTimestamp && (accountType == AccountType.customer || lesson.studentID == studentID));
+    if (notifyListeners) lessonsListVersion++;
   }
 
   void updateProfile(String newUsername) {

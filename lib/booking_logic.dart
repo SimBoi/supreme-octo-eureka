@@ -74,6 +74,9 @@ Future<String?> createOrderRequest(
       } else if (jsonResponse['Result'] == 'OVERLAPPING_LESSON') {
         appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.overlappingLessons);
         return null;
+      } else if (jsonResponse['Result'] == 'LIVE_LESSON_EXISTS') {
+        appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.liveLessonExists);
+        return null;
       } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST' || jsonResponse['Result'] == 'WRONG_PASSWORD') {
         logout(appState);
         return null;
@@ -93,30 +96,29 @@ Future<String?> createOrderRequest(
   return null;
 }
 
-// TODO: convert to GetLessonDetails
-Future<bool> confirmOrder(
+Future<bool> longPollConfirmOrder(
   Lesson lesson,
   AppState appState,
 ) async {
   var response = await appState.dbRequest(
     body: {
-      'Action': 'ConfirmOrder',
+      'Action': 'LongPollActiveLesson',
       'AccountType': 'Customer',
-      'Phone': appState.currentCustomer!.phone,
-      'Password': appState.currentCustomer!.password,
       'OrderID': lesson.orderID.toString(),
     },
+    timeout: 15,
   );
 
   if (response.statusCode == 200) {
     try {
       var jsonResponse = json.decode(response.body);
       if (jsonResponse['Result'] == 'SUCCESS') {
+        lesson.copyFrom(Lesson.fromDict(jsonResponse['Details']));
         appState.addLesson(lesson);
         appState.showMsgSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonBooked);
         return true;
-      } else if (jsonResponse['Result'] == 'PHONE_DOESNT_EXIST' || jsonResponse['Result'] == 'WRONG_PASSWORD') {
-        logout(appState);
+      } else if (jsonResponse['Result'] == 'LESSON_DOESNT_EXIST') {
+        appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.failedToConfirmOrder);
         return false;
       }
       throw jsonResponse['Result'];
@@ -159,8 +161,7 @@ Future<bool> cancelLesson(
         logout(appState);
         return false;
       } else if (jsonResponse['Result'] == 'LESSON_ALREADY_STARTED') {
-        // appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonAlreadyStarted); // TODO: localize
-        appState.showErrorSnackBar('Cannot cancel a lesson that has already started.');
+        appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.cantCancelAlreadyStarted);
         return false;
       }
       throw jsonResponse['Result'];
@@ -211,8 +212,7 @@ Future<bool> acceptLesson(
         appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonDoesNotExist);
         return false;
       } else if (jsonResponse['Result'] == 'LESSON_ALREADY_ACCEPTED') {
-        // appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonAlreadyAccepted); // TODO: localize
-        appState.showErrorSnackBar('This lesson has already been accepted by a teacher.');
+        appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonAlreadyAccepted);
         return false;
       }
       throw jsonResponse['Result'];
@@ -257,8 +257,7 @@ Future<bool> rejectLesson(
         appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonDoesNotExist);
         return false;
       } else if (jsonResponse['Result'] == 'LESSON_ALREADY_STARTED') {
-        // appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonAlreadyStarted); // TODO: localize
-        appState.showErrorSnackBar('Cannot cancel a lesson that has already started.');
+        appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.cantCancelAlreadyStarted);
         return false;
       }
       throw jsonResponse['Result'];
@@ -276,13 +275,14 @@ Future<bool> rejectLesson(
 
 // if link is available, update the lesson link and start timestamp in the app state and return true
 // if link is not available, return false
-Future<bool> getLiveLessonLink(int orderID, AppState appState, {bool isBackground = false}) async {
+Future<bool> longPollLiveLessonLink(int orderID, AppState appState, {bool isBackground = false}) async {
   var response = await appState.dbRequest(
     body: {
-      'Action': 'GetLiveLessonLink',
+      'Action': 'LongPollLiveLessonLink',
       'OrderID': orderID.toString(),
     },
     indicateLoading: !isBackground,
+    timeout: 15,
   );
 
   if (response.statusCode == 200) {
@@ -295,8 +295,7 @@ Future<bool> getLiveLessonLink(int orderID, AppState appState, {bool isBackgroun
         if (!isBackground) appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonDoesNotExist);
         return false;
       } else if (jsonResponse['Result'] == 'LINK_NOT_READY') {
-        // if (!isBackground) appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.lessonLinkNotReady); // TODO: localize
-        if (!isBackground) appState.showErrorSnackBar('We are assigning a teacher to your lesson. Please wait.');
+        if (!isBackground) appState.showErrorSnackBar(AppLocalizations.of(appState.rootContext!)!.waitingForTeacher);
         return false;
       }
       throw jsonResponse['Result'];

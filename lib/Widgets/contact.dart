@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -21,7 +22,7 @@ class ContactPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Support Email: support@darrisni.com", // TODO: localize
+              "Support Email: support@darrisni.com",
               style: theme.textTheme.bodyLarge,
             ),
             const Gap(10),
@@ -33,13 +34,16 @@ class ContactPage extends StatelessWidget {
                 );
                 if (await canLaunchUrl(emailUri)) {
                   await launchUrl(emailUri);
-                } else {
+                } else if (context.mounted) {
+                  // copy email to clipboard instead
+                  Clipboard.setData(const ClipboardData(text: 'support@darrisni.com'));
+
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Could not open email app.')), // TODO: localize
+                    SnackBar(content: Text(AppLocalizations.of(context)!.couldntOpenEmail)),
                   );
                 }
               },
-              child: const Text("Send Email"), // TODO: localize
+              child: Text(AppLocalizations.of(context)!.sendEmail),
             ),
             const Gap(20),
             Text(
@@ -52,18 +56,21 @@ class ContactPage extends StatelessWidget {
                 final Uri whatsappUri = Uri.parse("https://wa.me/+972528800120");
                 if (await canLaunchUrl(whatsappUri)) {
                   await launchUrl(whatsappUri);
-                } else {
+                } else if (context.mounted) {
+                  // copy WhatsApp number to clipboard instead
+                  Clipboard.setData(const ClipboardData(text: '+972528800120'));
+
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Could not open WhatsApp.')), // TODO: localize
+                    SnackBar(content: Text(AppLocalizations.of(context)!.couldntOpenWhatsApp)),
                   );
                 }
               },
-              child: const Text("Message on WhatsApp"), // TODO: localize
+              child: Text(AppLocalizations.of(context)!.messageOnWhatsApp),
             ),
             const Gap(20),
-            const Text(
-              "Business Physical Address:\nקורטבה 11, קלנסווה, ישראל,\nת.ד. 694, מיקוד 4064000", // TODO: localize
-              style: TextStyle(fontSize: 16),
+            Text(
+              AppLocalizations.of(context)!.businessAddress("קורטבה 11, קלנסווה, ישראל", "ת.ד. 694, מיקוד 4064000"),
+              style: const TextStyle(fontSize: 16),
             ),
             const Gap(10),
             // line separator
@@ -72,9 +79,9 @@ class ContactPage extends StatelessWidget {
               thickness: 1,
             ),
             const Gap(10),
-            const Text(
-              "To delete your account, please contact us via email or WhatsApp.", // TODO: localize
-              style: TextStyle(fontSize: 16),
+            Text(
+              AppLocalizations.of(context)!.deleteAccountDescription,
+              style: const TextStyle(fontSize: 16),
             ),
           ],
         ),

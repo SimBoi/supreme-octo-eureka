@@ -15,13 +15,35 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    AppState appState = AppState();
+  State<MyApp> createState() => _MyAppState();
+}
 
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  AppState appState = AppState();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    appState.lifecycleState = state;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // Check if OneSignal is available on the current platform and initialize it
     if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android) {
       OneSignal.initialize("e7d7a2bd-815c-4bd9-92dd-9b1f772b20c9");

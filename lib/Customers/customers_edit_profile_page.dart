@@ -166,7 +166,7 @@ class EditCustomerProfilePage extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => const ContactPage()),
                 );
               },
-              child: const Text('Request Account Deletion'), // TODO: localize this
+              child: Text(AppLocalizations.of(context)!.requestAccountDeletion),
             ),
           ],
         ),

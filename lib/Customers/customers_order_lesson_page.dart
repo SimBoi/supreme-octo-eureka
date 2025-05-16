@@ -4,10 +4,12 @@ import 'package:gap/gap.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:supreme_octo_eureka/Widgets/legal.dart';
+import 'package:supreme_octo_eureka/Widgets/lesson_card.dart';
 import 'package:supreme_octo_eureka/app_state.dart';
 import 'package:supreme_octo_eureka/authentication/auth_logic.dart';
 import 'package:supreme_octo_eureka/booking_logic.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class OrderLessonPage extends StatefulWidget {
   const OrderLessonPage({super.key});
@@ -273,16 +275,14 @@ class OrderLessonTypePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            // Text(AppLocalizations.of(context)!.orderLessonType), // TODO: localize
-            const Text("Please select the type of lesson you want to order"),
+            Text(AppLocalizations.of(context)!.orderLessonType),
             const Gap(16.0),
             ElevatedButton(
               onPressed: () {
                 onTypeSelected(true);
                 animateToPage(2);
               },
-              // child: Text(AppLocalizations.of(context)!.immediateLesson), // TODO: localize
-              child: const Text("Get a lesson right now"),
+              child: Text(AppLocalizations.of(context)!.immediateLesson),
             ),
             const Gap(16.0),
             ElevatedButton(
@@ -290,8 +290,7 @@ class OrderLessonTypePage extends StatelessWidget {
                 onTypeSelected(false);
                 animateToPage(1);
               },
-              // child: Text(AppLocalizations.of(context)!.scheduledLesson), // TODO: localize
-              child: const Text("Schedule a lesson for a later time (Recommended)"),
+              child: Text(AppLocalizations.of(context)!.scheduleLesson),
             ),
           ],
         ),
@@ -447,6 +446,7 @@ class OrderLessonConfirmationPage extends StatefulWidget {
 
 class _OrderLessonConfirmationPageState extends State<OrderLessonConfirmationPage> {
   final TextEditingController couponController = TextEditingController();
+  String couponCode = '';
   double? newPrice;
 
   @override
@@ -470,9 +470,10 @@ class _OrderLessonConfirmationPageState extends State<OrderLessonConfirmationPag
           children: <Widget>[
             // Order Summary Card
             Card.outlined(
-              shape: RoundedRectangleBorder(
-                side: BorderSide(color: theme.colorScheme.onSurface),
-                borderRadius: BorderRadius.circular(12),
+              shape: (Theme.of(context).cardTheme.shape as RoundedRectangleBorder? ?? const RoundedRectangleBorder()).copyWith(
+                side: BorderSide(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -512,7 +513,7 @@ class _OrderLessonConfirmationPageState extends State<OrderLessonConfirmationPag
                       children: [
                         const Icon(Icons.calendar_today),
                         const Gap(8),
-                        widget.isImmediate ? const Text("Live Lesson") : Text(Lesson.getDateTimeString(context, widget.dateTime.millisecondsSinceEpoch ~/ 1000)), // TODO: localize
+                        widget.isImmediate ? Text(AppLocalizations.of(context)!.liveLesson) : Text(Lesson.getDateTimeString(context, widget.dateTime.millisecondsSinceEpoch ~/ 1000)),
                       ],
                     ),
                     const Gap(16),
@@ -530,9 +531,10 @@ class _OrderLessonConfirmationPageState extends State<OrderLessonConfirmationPag
             const Gap(16),
             // Coupon Code Card
             Card.outlined(
-              shape: RoundedRectangleBorder(
-                side: BorderSide(color: theme.colorScheme.onSurface),
-                borderRadius: BorderRadius.circular(12),
+              shape: (Theme.of(context).cardTheme.shape as RoundedRectangleBorder? ?? const RoundedRectangleBorder()).copyWith(
+                side: BorderSide(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -559,9 +561,9 @@ class _OrderLessonConfirmationPageState extends State<OrderLessonConfirmationPag
                         ElevatedButton(
                           onPressed: () async {
                             // Read coupon code from the text field
-                            String couponCode = couponController.text;
                             double updatedPrice = await testCoupon(couponCode, originalPrice, appState);
                             setState(() {
+                              couponCode = updatedPrice < 0 ? '' : couponController.text;
                               newPrice = updatedPrice < 0 ? null : updatedPrice;
                             });
                           },
@@ -637,19 +639,16 @@ class _OrderLessonConfirmationPageState extends State<OrderLessonConfirmationPag
                   isPending: true,
                   link: '',
                 );
-                String? success = await createOrderRequest(
-                    lesson,
-                    couponController.text, // TODO: use last applied coupon
-                    appState);
-                if (success != null) {
+                String? paymentLink = await createOrderRequest(lesson, couponCode, appState); // TODO: test coupon code
+                if (paymentLink != null) {
                   if (context.mounted) {
                     Navigator.of(context)
                       ..pop()
-                      ..push(MaterialPageRoute(builder: (context) => OrderLessonPaymentPage(lesson: lesson)));
+                      ..push(MaterialPageRoute(builder: (context) => OrderLessonPaymentPage(lesson: lesson, paymentLink: paymentLink)));
                   }
                 }
               },
-              child: Text(AppLocalizations.of(context)!.confirmAndPay), // TODO: change text back to "Confirm and proceed to payment"
+              child: Text(AppLocalizations.of(context)!.confirmAndPay),
             ),
           ],
         ),
@@ -658,10 +657,45 @@ class _OrderLessonConfirmationPageState extends State<OrderLessonConfirmationPag
   }
 }
 
-class OrderLessonPaymentPage extends StatelessWidget {
+class OrderLessonPaymentPage extends StatefulWidget {
   final Lesson lesson;
+  final String? paymentLink;
 
-  const OrderLessonPaymentPage({super.key, required this.lesson});
+  const OrderLessonPaymentPage({super.key, required this.lesson, this.paymentLink});
+
+  @override
+  _OrderLessonPaymentPageState createState() => _OrderLessonPaymentPageState();
+}
+
+class _OrderLessonPaymentPageState extends State<OrderLessonPaymentPage> {
+  bool exited = false;
+
+  // called after the iframe exits, long poll the server for the order status then navigate to the home page
+  void _confirmPayment(BuildContext context) async {
+    if (exited) return;
+    exited = true;
+    AppState appState = context.read<AppState>();
+
+    bool result = await longPollConfirmOrder(widget.lesson, appState);
+    if (!context.mounted) return;
+    if (result) {
+      appState.showMsgSnackBar(AppLocalizations.of(context)!.lessonBooked);
+    } else {
+      appState.showErrorSnackBar(AppLocalizations.of(context)!.unexpectedError);
+    }
+
+    // pop the payment page
+    Navigator.of(context).pop();
+
+    // if the lesson is immediate, push the waiting page
+    if (widget.lesson.isImmediate) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => LiveLessonWaitingPage(lesson: widget.lesson),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -695,20 +729,19 @@ class OrderLessonPaymentPage extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Payment'),
         ),
+        // iframe for payment link
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text('Lesson: ${lesson.title}, id: ${lesson.orderID}, After confirming, a teacher will be assigned to you and will contact you via WhatsApp.'),
-              ElevatedButton(
-                onPressed: () async {
-                  if (await confirmOrder(lesson, appState) && context.mounted) {
-                    Navigator.of(context).pop();
-                  }
-                },
-                child: const Text('Confirm and send order'),
-              ),
-            ],
+          child: WebViewWidget(
+            controller: WebViewController()
+              ..setJavaScriptMode(JavaScriptMode.unrestricted)
+              ..setNavigationDelegate(
+                NavigationDelegate(
+                  onPageStarted: (String url) {
+                    if (url.contains('success')) _confirmPayment(context);
+                  },
+                ),
+              )
+              ..loadRequest(Uri.parse(widget.paymentLink!)),
           ),
         ),
       ),
